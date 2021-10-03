@@ -1,9 +1,10 @@
 env:
   browser: true
   es2021: true
+  es6: true
 overrides:
   - files:
-      - timeline-range-slider/__tests__/*
+      - data-table/__tests__/*
     env:
       node: true
       jest/globals: true
