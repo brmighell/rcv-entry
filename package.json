@@ -2,12 +2,12 @@
   "name": "@artoonie/timeline-range-slider",
   "version": "0.1.12",
   "description": "A customizable range slider with a built-in timeline",
-  "main": "timeline-range-slider/slider.js",
+  "main": "data-table/table.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "jest --coverage timeline-range-slider",
+    "test": "jest --coverage data-table",
     "lint": "eslint ."
   },
   "repository": {
