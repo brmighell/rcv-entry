@@ -142,11 +142,13 @@ function hideHelpTooltip() {
  * Public functions below
  */
 
-function dt_createDataTable() {
+function dt_createDataTable(config) {
     /**
      * Creates the HTML data table
      * TODO: Fill this out
      */
+
+    document.getElementById(config.id).textContent = "Hello world";
 }
 
 function dt_disableField(row, col, fieldName) {
