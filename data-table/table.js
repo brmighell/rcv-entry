@@ -66,14 +66,6 @@ function addColumn(numberOfColumns) {
      */
 }
 
-function deleteColumn(numberOfColumns) {
-    /**
-     * Deletes columns from existing table. Maybe should also
-     * accept index as an argument?
-     * TODO: Fill this out
-     */
-}
-
 function createRowEntryBox() {
     /**
      * Creates the HTML element that will allow the user to manually
@@ -199,5 +191,5 @@ function dt_getFieldValue(row, col, fieldName, value) {
 // In case of node.js
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
-    exports.createDataTable = dt_createDataTable();
+    exports.createDataTable = dt_createDataTable;
 }
