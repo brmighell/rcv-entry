@@ -58,7 +58,7 @@ function onColumnEntryBoxEnter(event, boxValue) {
      */
 }
 
-function addColumn(numberOfColumns) {
+function addColumns(numberOfColumns, index) {
     /**
      * Adds columns from existing table. Will probably call
      * createEntryCell(). Maybe should also accept index as an argument?
@@ -66,10 +66,25 @@ function addColumn(numberOfColumns) {
      */
 }
 
-function deleteColumn(numberOfColumns) {
+function addSingleColumn(index) {
+    /**
+     * Adds single column from existing table. Will probably call
+     * createEntryCell(). Maybe should also accept index as an argument?
+     * TODO: Fill this out
+     */
+}
+
+function deleteColumns(numberOfColumns, index) {
     /**
      * Deletes columns from existing table. Maybe should also
      * accept index as an argument?
+     * TODO: Fill this out
+     */
+}
+
+function deleteSingleColumn(index) {
+    /**
+     * Deletes single column from existing table. Maybe should also accept index as an argument?
      * TODO: Fill this out
      */
 }
@@ -83,10 +98,33 @@ function createRowEntryBox() {
      */
 }
 
-function deleteColumn(numberOfColumns) {
+function addRows(numberOfRows, index) {
     /**
-     * Deletes columns from existing table. Maybe should also
+     * Adds rows from existing table. Will probably call
+     * createEntryCell(). Maybe should also accept index as an argument?
+     * TODO: Fill this out
+     */
+}
+
+function addSingleRow(index) {
+    /**
+     * Adds single row from existing table. Will probably call
+     * createEntryCell(). Maybe should also accept index as an argument?
+     * TODO: Fill this out
+     */
+}
+
+function deleteRows(numberOfRows, index) {
+    /**
+     * Deletes row from existing table. Maybe should also
      * accept index as an argument?
+     * TODO: Fill this out
+     */
+}
+
+function deleteSingleRow(index) {
+    /**
+     * Deletes single row from existing table. Maybe should also accept index as an argument?
      * TODO: Fill this out
      */
 }
@@ -145,10 +183,22 @@ function hideHelpTooltip() {
 function dt_createDataTable(config) {
     /**
      * Creates the HTML data table
-     * TODO: Fill this out
+     * TODO: Finish filling this out
+     * TODO: Transfer code to appropriate functions
+     * TODO: Make sure this works
      */
 
     document.getElementById(config.id).textContent = "Hello world";
+
+    let dataTable = document.createElement("TABLE");
+    dataTable.id = convertWrapperDivIdToTableDivId(config.id);
+
+    let row = dataTable.insertRow(0);
+    let cell = row.insertCell(0);
+    let text = document.createTextNode("Test cell");
+    cell.appendChild(text);
+
+    document.getElementById(config.id).appendChild(dataTable);
 }
 
 function dt_disableField(row, col, fieldName) {
