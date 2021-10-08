@@ -91,6 +91,41 @@ function deleteColumn(numberOfColumns) {
      */
 }
 
+/**
+ * This function takes the id of the list container for the candidates names
+ * It then adds to the list another space for another candidate at the bottom of the list
+ * @param listContainer id of the list container
+ */
+function addCandidate(listContainer) {
+    let container = document.getElementById(listContainer);
+    let child  = document.createElement("DIV");
+
+    child.innerHTML = 'Enter candidate\'s name'
+    container.appendChild(child);
+}
+
+/**
+ * This function enables the user to enter the name of the candidate,
+ * When the container with the id is clicked, an input field is created that enables the user
+ * to input the name of the candidate.
+ * If the user focuses out of the input field, the name is updated appropritely, and the
+ * input element removed
+ * @param containerId the id of the container
+ */
+function enterCandidateName(containerId) {
+    let div = document.getElementById(containerId);
+    let input =  document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = "Enter candidate's name";
+    div.innerHTML.innerHTML = input;
+    input.focusout = function () {
+        let value = input.value.trim();
+        if (value !== '' ) {
+            div.innerHTML = input;
+        }
+    }
+}
+
 function toJSON() {
     /**
      * Parses data held in HTML to JSON and sends it to client
