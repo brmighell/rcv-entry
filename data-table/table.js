@@ -64,6 +64,16 @@ function addColumn(numberOfColumns) {
      * createEntryCell(). Maybe should also accept index as an argument?
      * TODO: Fill this out
      */
+    var index = numberOfColumns.cellIndex;
+    var tab = document.getElementById('_tableDiv_'); // get the table informatio 
+    var len1 = tab.rows.length; // get the length of rows
+    var cel = tab.rows[0].cells; // get the cells in the first row
+    var len2 = cel.length; 
+
+    for (var i = 0; j < len1; i++){
+        var x = tab.rows[i].insertCell(index);
+        x.innerHTML = "new cell" + len2;
+    }
 }
 
 function createRowEntryBox() {
@@ -81,6 +91,13 @@ function deleteColumn(numberOfColumns) {
      * accept index as an argument?
      * TODO: Fill this out
      */
+
+    var index = numberOfColumns.cellIndex;
+    var table = document.getElementById("_tableDiv_");
+    var len = table.rows.length;
+    for (var i = 0; i < len; i++){
+        table.rows[i].deleteCell(index);
+    }
 }
 
 function toJSON() {
