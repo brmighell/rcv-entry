@@ -96,7 +96,7 @@ function deleteColumn(numberOfColumns) {
  * It then adds to the list another space for another candidate at the bottom of the list
  * @param listContainer id of the list container
  */
-function addCandidate(listContainer) {
+function addRow(wrapperDivId) {
     let container = document.getElementById(listContainer);
     let child  = document.createElement("DIV");
 
