@@ -112,7 +112,7 @@ function addRow(wrapperDivId) {
  * input element removed
  * @param containerId the id of the container
  */
-function enterCandidateName(containerId) {
+function enterRowValue(wrapperDivId) {
     let div = document.getElementById(containerId);
     let input =  document.createElement("INPUT");
     input.type = 'text';
