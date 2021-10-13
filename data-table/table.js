@@ -157,29 +157,6 @@ function addColumns(numberOfColumns, index) {
      */
 }
 
-function addSingleColumn(index) {
-    /**
-     * Adds single column from existing table. Will probably call
-     * createEntryCell(). Maybe should also accept index as an argument?
-     * TODO: Fill this out
-     */
-}
-
-function deleteColumns(numberOfColumns, index) {
-    /**
-     * Deletes columns from existing table. Maybe should also
-     * accept index as an argument?
-     * TODO: Fill this out
-     */
-}
-
-function deleteSingleColumn(index) {
-    /**
-     * Deletes single column from existing table. Maybe should also accept index as an argument?
-     * TODO: Fill this out
-     */
-}
-
 function createRowEntryBox() {
     /**
      * Creates the HTML element that will allow the user to manually
@@ -250,10 +227,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
 
 /**
  * Creates a magic string for a cell
- * @param wrapperDivId  - ID for the wrapper
- * @param rowIndex      - The row index for a cell
- * @param colIndex      - The column index for a cell
- * @returns {string}    - Returns a magic string unique to a cell, based on location
+ * @param {object} wrapperDivId - ID for the wrapper
+ * @param {Number} rowIndex     - The row index for a cell
+ * @param {Number} colIndex     - The column index for a cell
+ * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
     return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex + "_";
