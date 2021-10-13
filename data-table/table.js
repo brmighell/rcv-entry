@@ -94,12 +94,12 @@ function deleteColumn(numberOfColumns) {
 /**
  * This function takes the id of the list container for the candidates names
  * It then adds to the list another space for another candidate at the bottom of the list
- * @param listContainer id of the list container
+ * @param wrapperDivId id of the list container
  */
 function addRow(wrapperDivId) {
-    let container = document.getElementById(listContainer);
-    let child  = document.createElement("DIV");
-
+    let container = document.getElementById(wrapperDivId);
+    let child = document.createElement("DIV");
+    /** TODO: replace candidate's name below with config.Rowname */
     child.innerHTML = 'Enter candidate\'s name'
     container.appendChild(child);
 }
@@ -108,19 +108,20 @@ function addRow(wrapperDivId) {
  * This function enables the user to enter the name of the candidate,
  * When the container with the id is clicked, an input field is created that enables the user
  * to input the name of the candidate.
- * If the user focuses out of the input field, the name is updated appropritely, and the
+ * If the user focuses out of the input field, the name is updated appropriately, and the
  * input element removed
- * @param containerId the id of the container
+ * @param wrapperDivId the id of the container
  */
 function enterRowValue(wrapperDivId) {
-    let div = document.getElementById(containerId);
-    let input =  document.createElement("INPUT");
+    let div = document.getElementById(wrapperDivId);
+    let input = document.createElement("INPUT");
     input.type = 'text';
+    /** TODO: replace candidate's name below with config.Rowname */
     input.placeholder = "Enter candidate's name";
     div.innerHTML.innerHTML = input;
     input.focusout = function () {
         let value = input.value.trim();
-        if (value !== '' ) {
+        if (value !== '') {
             div.innerHTML = input;
         }
     }
