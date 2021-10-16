@@ -99,14 +99,15 @@ function validateConfig(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createSubDivs(config) {
+    let subDivClass = "SubDiv";
+
     let entryBoxDiv = document.createElement("div");
     entryBoxDiv.id = config.tableIds.entryBoxDivId;
+    entryBoxDiv.classList.add(subDivClass);
 
     let tableDiv = document.createElement("div");
     tableDiv.id = config.tableIds.tableDivId;
-
-    let text = document.createTextNode("~~This is where the entry box will live~~");
-    entryBoxDiv.appendChild(text);
+    tableDiv.classList.add(subDivClass);
 
     document.getElementById(config.tableIds.wrapperDivId).appendChild(entryBoxDiv);
     document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv);
@@ -160,7 +161,7 @@ function addColumns(numberOfColumns, index) {
 function addRows(config, numberOfRows, index) {
     // For each of the newly requested rows
     for (let newRow = 0; newRow < numberOfRows; newRow++) {
-        addSingleRow(config, index + newRow)
+        addSingleRow(config, index + newRow, undefined)
     }
 }
 
@@ -168,6 +169,8 @@ function addRows(config, numberOfRows, index) {
  * Adds a single row to the table
  * @param {object} config   - Table configuration object
  * @param {Number} rowIndex - Where to insert the row
+ * @param {String} content  - Content to place in the left-most cell of a row (uses default if
+ *                              no string is provided)
  * @returns {undefined}     - Doesn't return anything
  */
 function addSingleRow(config, rowIndex, content) {
@@ -177,21 +180,48 @@ function addSingleRow(config, rowIndex, content) {
     for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
         // Create an entry cell
         if (colIndex === 0 && content === undefined) {
-            createEntryCell(config, row, rowIndex, colIndex, config.datumConfig.names);
+            createEntryCell(config, row, rowIndex, colIndex, config.datumConfig.names[0]);
         } else if (colIndex === 0) {
             createEntryCell(config, row, rowIndex, colIndex, content);
         } else {
             createEntryCell(config, row, rowIndex, colIndex, " (" + rowIndex + ", " + colIndex + ") ")
         }
     }
+
+    if (rowIndex >= config.numRows) {
+        config.numRows += 1;
+    }
 }
 
-function deleteRows(numberOfRows, index) {
-    /**
-     * Deletes row from existing table. Maybe should also
-     * accept index as an argument?
-     * TODO: Fill this out
-     */
+/**
+ * Deletes multiple rows from an existing table
+ *
+ * FIXME: This will work when deleting from the bottom of the table but might not from the middle!
+ *
+ * @param {object} config       - Table configuration object
+ * @param {Number} numberOfRows - The number of rows to be deleted
+ * @param {Number} rowIndex     - The index of the top-most row to be deleted
+ * @returns {undefined}         - Doesn't return anything
+ */
+function deleteRows(config, numberOfRows, rowIndex) {
+    // Deletes from bottom up
+    for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
+        deleteSingleRow(config, rowIndex + rowNum);
+    }
+}
+
+/**
+ * Deletes a single row from an existing table
+ *
+ * FIXME: This works when deleting from the bottom of the table. It does not support deleting from the middle!
+ *
+ * @param {object} config   - Table configuration object
+ * @param {Number} rowIndex - Index of the row to be deleted
+ * @returns {undefined}     - Doesn't return anything
+ */
+function deleteSingleRow(config, rowIndex) {
+    document.getElementById(config.tableIds.tbodyElementId).deleteRow(rowIndex);
+    config.numRows -= 1;
 }
 
 /**
@@ -200,8 +230,10 @@ function deleteRows(numberOfRows, index) {
  * @param {HTMLTableRowElement} row - HTML table element to which the cell will be added
  * @param {Number} rowIndex         - The index of the row, used to create the cell's magic string
  * @param {Number} colIndex         - The index of the column, used to create the cell's magic string
+ * @param {String} content          - The content of the cell
  * @returns {undefined}             - Doesn't return anything
  */
+// eslint-disable-next-line max-params
 function createEntryCell(config, row, rowIndex, colIndex, content) {
     /**
      * TODO: Set this up to deal with default fields
@@ -213,7 +245,6 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
     let middle = document.createTextNode(content);
 
     cell.appendChild(middle);
-
 }
 
 /**
@@ -233,14 +264,6 @@ function createEntryBox(config) {
     createColumnEntryBox();
 }
 
-function createColumnEntryBox(config) {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the columns
-     * TODO: Fill this out
-     */
-}
-
 function createRowEntryBox(config) {
     /**
      * Creates the HTML element that will allow the user to manually
@@ -248,60 +271,77 @@ function createRowEntryBox(config) {
      * TODO: Fill this out
      * TODO: What other methods will this need?
      */
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
 
-    createRowPrompt(config);
-    createRowEntryArea(config);
+    createRowInputAndBtn(config);
 
+    let br = document.createElement("br");
     let br1 = document.createElement("br");
     let br2 = document.createElement("br");
 
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    entryBoxDiv.appendChild(br);
     entryBoxDiv.appendChild(br1);
     entryBoxDiv.appendChild(br2);
+
+    createRowDeleteBtn(config);
 }
 
 /**
+ * TODO: Decide to keep/delete this function. Currently deprecated.
  * This function takes the id of the list container for the candidates names
  * It then adds to the list another space for another candidate at the bottom of the list
- * @param wrapperDivId id of the list container
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
  */
 function createRowPrompt(config) {
     let container = document.getElementById(config.tableIds.entryBoxDivId);
     let child = document.createElement("DIV");
-    child.innerHTML = "Add " + config.datumConfig.names + ":";
+    child.innerHTML = "Enter " + config.datumConfig.names + ":";
     container.appendChild(child);
 }
 
 /**
- * This function enables the user to enter the name of the candidate,
- * When the container with the id is clicked, an input field is created that enables the user
- * to input the name of the candidate.
- * If the user focuses out of the input field, the name is updated appropriately, and the
- * input element removed
- * @param wrapperDivId the id of the container
+ * This function enables the user to enter the name of the candidate. Creates a text input field
+ * as well as a button that sends input text to addSingleRow().
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
  */
-function createRowEntryArea(config) {
-    let div = document.getElementById(config.tableIds.entryBoxDivId);
+function createRowInputAndBtn(config) {
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
     let input = document.createElement("INPUT");
     input.type = 'text';
-    /** TODO: replace candidate's name below with config.Rowname */
-    input.placeholder = config.datumConfig.names;
-    div.innerHTML.innerHTML = input;
-    input.focusout = function () {
+    input.placeholder = "Enter " + config.datumConfig.names;
+    entryBoxDiv.appendChild(input);
+
+    let addRowBtn = document.createElement("button");
+    addRowBtn.innerHTML = "Add row to bottom";
+    addRowBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
-            div.innerHTML += input;
+            addSingleRow(config, config.numRows, value);
+        } else {
+            addSingleRow(config, config.numRows, config.datumConfig.names[0])
         }
+        input.value = '';
     }
-    div.appendChild(input);
+    entryBoxDiv.appendChild(addRowBtn);
 }
 
-function deleteSingleRow(index) {
+function createRowDeleteBtn(config) {
+    let deleteRowBtn = document.createElement("button");
+    deleteRowBtn.innerHTML = "Delete row from bottom";
+    deleteRowBtn.onclick = function () {
+        deleteSingleRow(config, config.numRows - 1);
+    }
+    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteRowBtn);
+}
+
+function createColumnEntryBox(config) {
     /**
-     * Deletes single row from existing table. Maybe should also accept index as an argument?
+     * Creates the HTML element that will allow the user to manually
+     * affect the columns
      * TODO: Fill this out
      */
-
 }
 
 function toJSON() {
