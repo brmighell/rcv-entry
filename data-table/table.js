@@ -23,7 +23,7 @@ class Config {
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
-        this.numColumns = clientConfig.numColumns === undefined ? 3 : clientConfig.numColumns;
+        this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
 
         /**
          * @property {string} wrapperDivId      - ID for the div passed in by the client
@@ -128,18 +128,11 @@ function createTable(config) {
     tbody.id = config.tableIds.tbodyElementId;
 
     table.appendChild(tbody);
-    document.getElementById(config.tableIds.tableDivId).appendChild(table);
-    document.getElementById(config.tableIds.wrapperDivId).appendChild(document.getElementById(config.tableIds.tableDivId))
+    let tableDiv = document.getElementById(config.tableIds.tableDivId);
+    tableDiv.appendChild(table);
+    document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv)
 
     addRows(config, config.numRows, 0)
-}
-
-function createColumnEntryBox() {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the columns
-     * TODO: Fill this out
-     */
 }
 
 function onColumnEntryBoxEnter(event, boxValue) {
@@ -154,15 +147,6 @@ function addColumns(numberOfColumns, index) {
      * Adds columns from existing table. Will probably call
      * createEntryCell(). Maybe should also accept index as an argument?
      * TODO: Fill this out
-     */
-}
-
-function createRowEntryBox() {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the rows
-     * TODO: Fill this out
-     * TODO: What other methods will this need?
      */
 }
 
@@ -186,14 +170,28 @@ function addRows(config, numberOfRows, index) {
  * @param {Number} rowIndex - Where to insert the row
  * @returns {undefined}     - Doesn't return anything
  */
-function addSingleRow(config, rowIndex) {
+function addSingleRow(config, rowIndex, content) {
     // Insert a row into the body of the table
     let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex);
     // Then for each column
     for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
         // Create an entry cell
-        createEntryCell(config, row, rowIndex, colIndex)
+        if (colIndex === 0 && content === undefined) {
+            createEntryCell(config, row, rowIndex, colIndex, config.datumConfig.names);
+        } else if (colIndex === 0) {
+            createEntryCell(config, row, rowIndex, colIndex, content);
+        } else {
+            createEntryCell(config, row, rowIndex, colIndex, " (" + rowIndex + ", " + colIndex + ") ")
+        }
     }
+}
+
+function deleteRows(numberOfRows, index) {
+    /**
+     * Deletes row from existing table. Maybe should also
+     * accept index as an argument?
+     * TODO: Fill this out
+     */
 }
 
 /**
@@ -204,7 +202,7 @@ function addSingleRow(config, rowIndex) {
  * @param {Number} colIndex         - The index of the column, used to create the cell's magic string
  * @returns {undefined}             - Doesn't return anything
  */
-function createEntryCell(config, row, rowIndex, colIndex) {
+function createEntryCell(config, row, rowIndex, colIndex, content) {
     /**
      * TODO: Set this up to deal with default fields
      */
@@ -212,17 +210,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
 
-    let top = document.createTextNode("---------");
-    let br1 = document.createElement("br");
-    let middle = document.createTextNode("| (" + rowIndex + ", " + colIndex + ") |");
-    let br2 = document.createElement("br");
-    let bottom = document.createTextNode("---------");
+    let middle = document.createTextNode(content);
 
-    cell.appendChild(top);
-    cell.appendChild(br1);
     cell.appendChild(middle);
-    cell.appendChild(br2);
-    cell.appendChild(bottom);
+
 }
 
 /**
@@ -236,25 +227,48 @@ function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
     return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex + "_";
 }
 
-function deleteRows(numberOfRows, index) {
+function createEntryBox(config) {
+    createRowEntryBox(config);
+
+    createColumnEntryBox();
+}
+
+function createColumnEntryBox(config) {
     /**
-     * Deletes row from existing table. Maybe should also
-     * accept index as an argument?
+     * Creates the HTML element that will allow the user to manually
+     * affect the columns
      * TODO: Fill this out
      */
 }
 
+function createRowEntryBox(config) {
+    /**
+     * Creates the HTML element that will allow the user to manually
+     * affect the rows
+     * TODO: Fill this out
+     * TODO: What other methods will this need?
+     */
+
+    createRowPrompt(config);
+    createRowEntryArea(config);
+
+    let br1 = document.createElement("br");
+    let br2 = document.createElement("br");
+
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    entryBoxDiv.appendChild(br1);
+    entryBoxDiv.appendChild(br2);
+}
 
 /**
  * This function takes the id of the list container for the candidates names
  * It then adds to the list another space for another candidate at the bottom of the list
  * @param wrapperDivId id of the list container
  */
-function addRow(wrapperDivId) {
-    let container = document.getElementById(wrapperDivId);
+function createRowPrompt(config) {
+    let container = document.getElementById(config.tableIds.entryBoxDivId);
     let child = document.createElement("DIV");
-    /** TODO: replace candidate's name below with config.Rowname */
-    child.innerHTML = 'Enter candidate\'s name'
+    child.innerHTML = "Add " + config.datumConfig.names + ":";
     container.appendChild(child);
 }
 
@@ -266,19 +280,20 @@ function addRow(wrapperDivId) {
  * input element removed
  * @param wrapperDivId the id of the container
  */
-function enterRowValue(wrapperDivId) {
-    let div = document.getElementById(wrapperDivId);
+function createRowEntryArea(config) {
+    let div = document.getElementById(config.tableIds.entryBoxDivId);
     let input = document.createElement("INPUT");
     input.type = 'text';
     /** TODO: replace candidate's name below with config.Rowname */
-    input.placeholder = "Enter candidate's name";
+    input.placeholder = config.datumConfig.names;
     div.innerHTML.innerHTML = input;
     input.focusout = function () {
         let value = input.value.trim();
         if (value !== '') {
-            div.innerHTML = input;
+            div.innerHTML += input;
         }
     }
+    div.appendChild(input);
 }
 
 function deleteSingleRow(index) {
@@ -355,6 +370,8 @@ function dt_CreateDataTable(clientConfig) {
     createSubDivs(configDict[clientConfig.wrapperDivId]);
 
     createTable(configDict[clientConfig.wrapperDivId]);
+
+    createEntryBox(configDict[clientConfig.wrapperDivId])
 }
 
 function dt_disableField(row, col, fieldName) {
