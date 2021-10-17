@@ -337,6 +337,26 @@ function hideHelpTooltip() {
 }
 
 /**
+ * This function clears out an old table and reinitializes it with the previously passed-in clientConfig
+ * @param {object} clientConfig - Client configuration requests
+ * @returns {undefined}         - Doesn't return anything
+ */
+function createResetButton(clientConfig) {
+    let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
+
+    let resetBtn = document.createElement("button");
+    resetBtn.innerHTML = "Reset the table";
+
+    // Clears the wrapper div, deletes the old config object, and calls dt_CreateDataTable again
+    resetBtn.onclick = function () {
+        wrapperDiv.innerHTML = '';
+        Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
+        dt_CreateDataTable(clientConfig);
+    }
+    wrapperDiv.appendChild(resetBtn);
+}
+
+/**
  * Public functions below
  */
 
@@ -355,6 +375,8 @@ function dt_CreateDataTable(clientConfig) {
     createSubDivs(configDict[clientConfig.wrapperDivId]);
 
     createTable(configDict[clientConfig.wrapperDivId]);
+
+    createResetButton(clientConfig);
 }
 
 function dt_disableField(row, col, fieldName) {
