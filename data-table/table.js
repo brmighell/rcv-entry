@@ -18,12 +18,17 @@ class Config {
      * @property {string} wrapperDivId  - ID for the wrapper
      * @property {number} numRows       - Number of rows in the table
      * @property {number} numColumns    - Number of columns in the table
+     * @property {string} rowsName      - Name of rows in the table
+     * @property {string} columnsName   - Name of columns in the table
      * @property {object} tableIds      - Container for all the table's magic strings
      * @property {object} datumConfig   - Container for default values of a cell
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
+
+        this.rowsName = clientConfig.rowsName === undefined ? "row" : clientConfig.rowsName;
+        this.columnsName = clientConfig.columnsName === undefined ? "column" : clientConfig.columnsName;
 
         /**
          * @property {string} wrapperDivId      - ID for the div passed in by the client
@@ -121,6 +126,7 @@ function createSubDivs(config) {
 function createTable(config) {
     let table = document.createElement("table");
     table.id = config.tableIds.tableElementId;
+    table.classList.add("data-table");
 
     let thead = document.createElement("thead");
     thead.id = config.tableIds.theadElementId;
@@ -211,6 +217,7 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
 
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.classList.add("data-table-cell");
 
     let middle = document.createTextNode(content);
 
@@ -326,6 +333,7 @@ function createRowInputAndBtn(config) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = "Enter " + config.datumConfig.names;
+    input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
     input.addEventListener("keyup", function(event) {
@@ -341,7 +349,8 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
-    addRowBtn.innerHTML = "Add row to bottom";
+    addRowBtn.innerHTML = "+ Add a " + config.rowsName;
+    addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
@@ -362,7 +371,8 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
-    deleteRowBtn.innerHTML = "Delete row from bottom";
+    deleteRowBtn.innerHTML = "Delete a " + config.rowsName;
+    deleteRowBtn.classList.add("add-row-button") // this will be deleted.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
