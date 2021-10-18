@@ -132,6 +132,8 @@ function createTable(config) {
     document.getElementById(config.tableIds.wrapperDivId).appendChild(document.getElementById(config.tableIds.tableDivId))
 
     addRows(config, config.numRows, 0)
+    addMultipleColumns(config, config.numColumns, 0);
+    deleteColumns(config, config.numColumns);
 }
 
 function createColumnEntryBox() {
@@ -174,7 +176,7 @@ function addSingleColumn(config){
     for(let i = 0; i < numRows; i++){
         if(i == 0){  // head 
             let newCol = table.rows[i].insertCell(-1);
-            newCol.innerHTML("round " + numCols+1);
+            newCol.innerHTML = config.columnsName + (numCols + 1);
         }
         else{
             let txtPanel = document.createElement("input");
@@ -411,6 +413,9 @@ function dt_CreateDataTable(clientConfig) {
     createSubDivs(configDict[clientConfig.wrapperDivId]);
 
     createTable(configDict[clientConfig.wrapperDivId]);
+
+    addSingleColumn(configDict[clientConfig.wrapperDivId]);
+    deleteSingleRow(configDict[clientConfig.wrapperDivId]);
 }
 
 function dt_disableField(row, col, fieldName) {
