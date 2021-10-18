@@ -153,7 +153,7 @@ function onColumnEntryBoxEnter(event, boxValue) {
 
 
 /**
- * Adds colunms to the table.
+ * Adds columns to the table.
  * @param {object} config       - Table configuration object
  * @param {Number} numberOfColumns - Number of columns to be added
  * @returns {undefined}         - Doesn't return anything
