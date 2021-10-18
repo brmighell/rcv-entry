@@ -149,12 +149,68 @@ function onColumnEntryBoxEnter(event, boxValue) {
      */
 }
 
-function addColumns(numberOfColumns, index) {
-    /**
-     * Adds columns from existing table. Will probably call
-     * createEntryCell(). Maybe should also accept index as an argument?
-     * TODO: Fill this out
-     */
+
+/**
+ * Adds colunms to the table.
+ * @param {object} config       - Table configuration object
+ * @param {Number} numberOfColumns - Number of columns to be added
+ * @returns {undefined}         - Doesn't return anything
+ */
+function addMultipleColumns(config, numberOfColumns) {
+    for(let i = 0; i < numberOfColumns; i++){
+        addSingleColumn(config, i);
+    }
+}
+
+/**
+ * Adds a single colunm to the table
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function addSingleColumn(config){ 
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // get length row right now
+    let numCols = table.rows[0].cells.length;
+    for(let i = 0; i < numRows; i++){
+        if(i == 0){  // head 
+            let newCol = table.rows[i].insertCell(-1);
+            newCol.innerHTML("round " + numCols+1);
+        }
+        else{
+            let txtPanel = document.createElement("input");
+            txtPanel.setAttribute('type', 'text');
+            txtPanel.placeholder = "Value";
+            let newCol = table.rows[i].insertCell(-1);
+            newCol.appendChild(txtPanel);
+        }
+    }
+}
+
+/**
+ * Deletes multiple Columns from an existing table
+ *
+ * @param {object} config       - Table configuration object
+ * @param {Number} numberOfColumns - The number of columns to be deleted
+ * @returns {undefined}         - Doesn't return anything
+ */
+function deleteColumns(config, numberOfColumns) {
+    for(let i = 0; i < numberOfColumns; i++){
+        deleteSingleColumn(config);
+    }
+}
+
+/**
+ * Deletes a single Column from an existing table (detle from the bottom of the table)
+ *
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function deleteSingleColumn(config) {
+     let table = document.getElementById(config.tableIds.tableElementId);
+     let numRows = table.rows.length; // get length row right now
+    for (var i = 0; i < numRows; i++){
+        table.rows[i].deleteCell(-1);
+    }
 }
 
 function createRowEntryBox() {
