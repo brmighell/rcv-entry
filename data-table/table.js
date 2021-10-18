@@ -161,7 +161,8 @@ function addColumns(numberOfColumns, index) {
 function addMultipleRows(config, numberOfRows, index) {
     // For each of the newly requested rows
     for (let newRow = 0; newRow < numberOfRows; newRow++) {
-        addSingleRow(config, index + newRow, undefined)
+        // The third argument of addSingleRow is optional and can be safely omitted.
+        addSingleRow(config, index + newRow);
     }
 }
 
@@ -283,6 +284,10 @@ function createRowEntryBox(config) {
 
     createRowInputAndBtn(config);
 
+    /**
+     * TODO: This is brute-force formatting that should not exist in final code. Give the buttons appropriate margins
+     * and padding in the CSS file then take these lines out.
+     */
     let br = document.createElement("br");
     let br1 = document.createElement("br");
     let br2 = document.createElement("br");
@@ -325,6 +330,9 @@ function createRowInputAndBtn(config) {
     // If the user hits enter while in the text box, click the addRowBtn
     input.addEventListener("keyup", function(event) {
         event.preventDefault();
+        /**
+         * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
+         */
         if (event.code === "Enter") {
             addRowBtn.click();
         }
