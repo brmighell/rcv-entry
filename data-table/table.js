@@ -26,7 +26,6 @@ class Config {
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
-
         this.rowsName = clientConfig.rowsName === undefined ? "row" : clientConfig.rowsName;
         this.columnsName = clientConfig.columnsName === undefined ? "column" : clientConfig.columnsName;
 
@@ -372,7 +371,7 @@ function createRowInputAndBtn(config) {
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
     deleteRowBtn.innerHTML = "Delete a " + config.rowsName;
-    deleteRowBtn.classList.add("add-row-button") // this will be deleted.
+    deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
