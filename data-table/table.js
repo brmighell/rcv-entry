@@ -158,39 +158,41 @@ function addColumns(numberOfColumns, index) {
 }
 
 /**
- * This function takes the id of the list container for the column names
- * It then adds to the list another space for another column at the bottom of the list
- * @param config id of the table
+ * This function enables the user to enter the name of a column. Creates a field for text input
+ * as well as a button that sends input text to addSingleColumn().
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
  */
-function addColumn(config) {
-    let container = document.getElementById(config.tableIds.entryBoxDivId);
-    let child = document.createElement("DIV");
-
-    child.innerHTML = "Enter "+ config.datumConfig.names + ":";
-    container.appendChild(child);
-}
-
-/**
- * This function enables the user to enter the name of the column,
- * When the container with the id is clicked, an input field is created that enables the user
- * to input the name of the column.
- * If the user focuses out of the input field, the name is updated appropriately, and the
- * input element removed
- * @param config the id of the table
- */
-
-function enterColumnValue(config) {
+function createColumnInputAndBtn(config) {
     let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = "Enter " + config.datumConfig.names;
-    entryBoxDiv.innerHTML.innerHTML = input;
-    input.focusout = function () {
+
+    // If the user hits enter while in the text box, click the addColumnBtn
+    input.addEventListener("keyup", function(event) {
+        event.preventDefault();
+
+        if (event.code === "Enter") {
+            addColumnBtn.click();
+        }
+    })
+    entryBoxDiv.appendChild(input);
+
+    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
+    let addColumnBtn = document.createElement("button");
+    addColumnBtn.innerHTML = "Add column to bottom";
+    addColumnBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
-            entryBoxDiv.innerHTML = input;
+            addSingleColumn(config, config.numColumns, value);
+        } else {
+            addSingleColumn(config, config.numColumns, config.datumConfig.names[0])
         }
+        input.value = '';
     }
+    entryBoxDiv.appendChild(addColumnBtn);
 }
 
 function createRowEntryBox() {
