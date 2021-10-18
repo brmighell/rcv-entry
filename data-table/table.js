@@ -157,6 +157,57 @@ function addColumns(numberOfColumns, index) {
      */
 }
 
+
+/**
+ * This function enables the user to enter the name of a column. Creates a field for text input
+ * as well as a button that sends input text to addSingleColumn().
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function createColumnInputAndBtn(config) {
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = "Enter " + config.datumConfig.names;
+
+    // If the user hits enter while in the text box, click the addColumnBtn
+    input.addEventListener("keyup", function(event) {
+        event.preventDefault();
+
+        if (event.code === "Enter") {
+            addColumnBtn.click();
+        }
+    })
+    entryBoxDiv.appendChild(input);
+
+    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
+     /**
+     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
+     */
+    let addColumnBtn = document.createElement("button");
+    addColumnBtn.innerHTML = "Add column to bottom";
+    addColumnBtn.onclick = function () {
+        let value = input.value.trim();
+        if (value !== '') {
+            addSingleColumn(config, config.numColumns, value);
+        } else {
+            addSingleColumn(config, config.numColumns, config.datumConfig.names[0])
+        }
+        input.value = '';
+    }
+    entryBoxDiv.appendChild(addColumnBtn);
+}
+
+function createRowEntryBox() {
+    /**
+     * Creates the HTML element that will allow the user to manually
+     * affect the rows
+     * TODO: Fill this out
+     * TODO: What other methods will this need?
+     */
+}
+
 /**
  * Adds rows to the table.
  * @param {object} config       - Table configuration object
@@ -435,6 +486,26 @@ function hideHelpTooltip() {
 }
 
 /**
+ * This function clears out an old table and reinitializes it with the previously passed-in clientConfig
+ * @param {object} clientConfig - Client configuration requests
+ * @returns {undefined}         - Doesn't return anything
+ */
+function createResetButton(clientConfig) {
+    let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
+
+    let resetBtn = document.createElement("button");
+    resetBtn.innerHTML = "Reset the table";
+
+    // Clears the wrapper div, deletes the old config object, and calls dt_CreateDataTable again
+    resetBtn.onclick = function () {
+        wrapperDiv.innerHTML = '';
+        Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
+        dt_CreateDataTable(clientConfig);
+    }
+    wrapperDiv.appendChild(resetBtn);
+}
+
+/**
  * Public functions below
  */
 
@@ -450,6 +521,8 @@ function dt_CreateDataTable(clientConfig) {
 
     createTable(configDict[clientConfig.wrapperDivId]);
 
+    createResetButton(clientConfig);
+  
     createEntryBox(configDict[clientConfig.wrapperDivId])
 }
 
