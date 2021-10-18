@@ -1,0 +1,14 @@
+table, thead, tbody, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 15px;
+}
+
+.SubDiv {
+    padding: 15px;
+    border: 1px solid black;
+    width: fit-content;
+    float: left;
+}
