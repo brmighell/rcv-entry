@@ -157,6 +157,42 @@ function addColumns(numberOfColumns, index) {
      */
 }
 
+/**
+ * This function takes the id of the list container for the column names
+ * It then adds to the list another space for another column at the bottom of the list
+ * @param config id of the table
+ */
+function addColumn(config) {
+    let container = document.getElementById(config.tableIds.entryBoxDivId);
+    let child = document.createElement("DIV");
+
+    child.innerHTML = "Enter "+ config.datumConfig.names + ":";
+    container.appendChild(child);
+}
+
+/**
+ * This function enables the user to enter the name of the column,
+ * When the container with the id is clicked, an input field is created that enables the user
+ * to input the name of the column.
+ * If the user focuses out of the input field, the name is updated appropriately, and the
+ * input element removed
+ * @param config the id of the table
+ */
+
+function enterColumnValue(config) {
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = "Enter " + config.datumConfig.names;
+    entryBoxDiv.innerHTML.innerHTML = input;
+    input.focusout = function () {
+        let value = input.value.trim();
+        if (value !== '') {
+            entryBoxDiv.innerHTML = input;
+        }
+    }
+}
+
 function createRowEntryBox() {
     /**
      * Creates the HTML element that will allow the user to manually
