@@ -165,10 +165,12 @@ function addSingleColumn(config){
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
     let numCols = table.rows[0].cells.length;
+
     for(let rowIndex = 0; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
-        config.numColumns += 1;
+        
     }
+    config.numColumns += 1;
 }
 
 /**
