@@ -317,7 +317,7 @@ function createColumnInputAndBtn(config) {
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
-    input.placeholder = "Enter " + config.columnsName;
+    input.placeholder = "Enter " + config.datumConfig.columnsName;
 
     // If the user hits enter while in the text box, click the addColumnBtn
     input.addEventListener("keyup", function(event) {
