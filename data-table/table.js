@@ -133,7 +133,8 @@ function createTable(config) {
     tableDiv.appendChild(table);
     document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv)
 
-    addMultipleRows(config, config.numRows, 0)
+    addMultipleRows(config, config.numRows, 0);
+    addMultipleColumns(config.numRows);
 }
 
 function onColumnEntryBoxEnter(event, boxValue) {
@@ -143,14 +144,98 @@ function onColumnEntryBoxEnter(event, boxValue) {
      */
 }
 
-function addColumns(numberOfColumns, index) {
-    /**
-     * Adds columns from existing table. Will probably call
-     * createEntryCell(). Maybe should also accept index as an argument?
-     * TODO: Fill this out
-     */
+/**
+ * Adds columns to the table.
+ * @param {object} config       - Table configuration object
+ * @param {Number} numberOfColumns - Number of columns to be added
+ * @returns {undefined}         - Doesn't return anything
+ */
+ function addMultipleColumns(config, numberOfColumns) {
+    for(let i = 0; i < numberOfColumns; i++){
+        addSingleColumn(config);
+    }
 }
 
+/**
+ * Adds a single colunm to the table
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function addSingleColumn(config){ 
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // get length row right now
+    let numCols = table.rows[0].cells.length;
+    for(let rowIndex = 0; rowIndex < numRows; rowIndex++){
+        createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
+        config.numColumns += 1;
+    }
+}
+
+/**
+ * Deletes multiple Columns from an existing table
+ *
+ * @param {object} config       - Table configuration object
+ * @param {Number} numberOfColumns - The number of columns to be deleted
+ * @returns {undefined}         - Doesn't return anything
+ */
+function deleteColumns(config, numberOfColumns) {
+    for(let i = 0; i < numberOfColumns; i++){
+        deleteSingleColumn(config);
+    }
+}
+
+/**
+ * Deletes a single Column from an existing table (detle from the bottom of the table)
+ *
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function deleteSingleColumn(config) {
+     let table = document.getElementById(config.tableIds.tableElementId);
+     let numRows = table.rows.length; // get length row right now
+    for (var i = 0; i < numRows; i++){
+        table.rows[i].deleteCell(-1);
+    }
+}
+
+/**
+ * Creates a button that will call deleteSingleColumn().
+ * FIXME: This currently only deletes the table's bottom-most row.
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+ function createColumnDeleteBtn(config) {
+    let deleteColumnBtn = document.createElement("button");
+    deleteColumnBtn.innerHTML = "Delete column from bottom";
+    deleteColumnBtn.onclick = function () {
+        deleteSingleColumn(config, config.numColumns - 1);
+    }
+    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteColumnBtn);
+}
+
+/**
+ * Creates HTML elements by which the user can easily create rows with custom left-most cells.
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function createColumnEntryBox(config) {
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    createColumnInputAndBtn(config);
+
+    /**
+     * TODO: This is brute-force formatting that should not exist in final code. Give the buttons appropriate margins
+     * and padding in the CSS file then take these lines out.
+     */
+    let br = document.createElement("br");
+    let br1 = document.createElement("br");
+    let br2 = document.createElement("br");
+
+    entryBoxDiv.appendChild(br);
+    entryBoxDiv.appendChild(br1);
+    entryBoxDiv.appendChild(br2);
+
+    createColumnDeleteBtn(config);
+}
 
 /**
  * This function enables the user to enter the name of a column. Creates a field for text input
@@ -160,46 +245,17 @@ function addColumns(numberOfColumns, index) {
  */
 function createColumnInputAndBtn(config) {
     let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-    // Creates the field for text input
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.placeholder = "Enter " + config.datumConfig.names;
-
-    // If the user hits enter while in the text box, click the addColumnBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-
-        if (event.code === "Enter") {
-            addColumnBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
      /**
      * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
      */
     let addColumnBtn = document.createElement("button");
+    addColumnBtn.click();
     addColumnBtn.innerHTML = "Add column to bottom";
     addColumnBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addSingleColumn(config, config.numColumns, value);
-        } else {
-            addSingleColumn(config, config.numColumns, config.datumConfig.names[0])
-        }
-        input.value = '';
+        addSingleColumn(config, config.numColumns);
     }
     entryBoxDiv.appendChild(addColumnBtn);
-}
-
-function createRowEntryBox() {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the rows
-     * TODO: Fill this out
-     * TODO: What other methods will this need?
-     */
 }
 
 /**
@@ -318,7 +374,7 @@ function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
 function createEntryBox(config) {
     createRowEntryBox(config);
 
-    createColumnEntryBox();
+    createColumnEntryBox(config);
 }
 
 /**
@@ -420,14 +476,6 @@ function createRowDeleteBtn(config) {
     document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteRowBtn);
 }
 
-function createColumnEntryBox(config) {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the columns
-     * TODO: Fill this out
-     */
-}
-
 function toJSON() {
     /**
      * Parses data held in HTML to JSON and sends it to client
@@ -514,6 +562,7 @@ function dt_CreateDataTable(clientConfig) {
     createResetButton(clientConfig);
   
     createEntryBox(configDict[clientConfig.wrapperDivId])
+
 }
 
 function dt_disableField(row, col, fieldName) {
