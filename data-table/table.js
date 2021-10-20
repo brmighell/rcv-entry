@@ -213,7 +213,8 @@ function deleteSingleColumn(config) {
  */
  function createColumnDeleteBtn(config) {
     let deleteColumnBtn = document.createElement("button");
-    deleteColumnBtn.innerHTML = "Delete column from bottom";
+    deleteColumnBtn.innerHTML = "Delete a column";
+    deleteColumnBtn.classList.add("add-column-button");
     deleteColumnBtn.onclick = function () {
         deleteSingleColumn(config, config.numColumns - 1);
     }
