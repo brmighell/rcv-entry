@@ -166,14 +166,14 @@ function onColumnEntryBoxEnter(event, boxValue) {
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function addSingleColumn(config){ 
+function addSingleColumn(config){
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
     let numCols = table.rows[0].cells.length;
 
     for(let rowIndex = 0; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
-        
+
     }
     config.numColumns += 1;
 }
@@ -240,7 +240,7 @@ function createColumnEntryBox(config) {
     entryBoxDiv.appendChild(br);
     entryBoxDiv.appendChild(br1);
     entryBoxDiv.appendChild(br2);
-  
+
     createColumnDeleteBtn(config);
 }
 
@@ -258,7 +258,8 @@ function createColumnInputAndBtn(config) {
      */
     let addColumnBtn = document.createElement("button");
     addColumnBtn.click();
-    addColumnBtn.innerHTML = "Add column to bottom";
+    addColumnBtn.innerHTML = "+ Add a " + config.columnsName;
+    addColumnBtn.classList.add("add-column-button");
     addColumnBtn.onclick = function () {
         addSingleColumn(config, config.numColumns);
     }

@@ -47,3 +47,17 @@
   border-width: 1px;
   border-style: solid;
 }
+
+.add-column-button{
+  height: 44px;
+  background: #FFFFFF;
+  border: 2px solid #D9D9D9;
+  box-sizing: border-box;
+
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 0;
+  margin: 1px 0px;
+
+}
