@@ -193,11 +193,12 @@ function deleteColumns(config, numberOfColumns) {
  * @returns {undefined}     - Doesn't return anything
  */
 function deleteSingleColumn(config) {
-     let table = document.getElementById(config.tableIds.tableElementId);
-     let numRows = table.rows.length; // get length row right now
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // get length row right now
     for (var i = 0; i < numRows; i++){
         table.rows[i].deleteCell(-1);
     }
+    config.numColumns -= 1
 }
 
 /**
@@ -208,7 +209,7 @@ function deleteSingleColumn(config) {
  */
  function createColumnDeleteBtn(config) {
     let deleteColumnBtn = document.createElement("button");
-    deleteColumnBtn.innerHTML = "Delete column from bottom";
+    deleteColumnBtn.innerHTML = "Delete column from the right";
     deleteColumnBtn.onclick = function () {
         deleteSingleColumn(config, config.numColumns - 1);
     }
@@ -253,7 +254,7 @@ function createColumnInputAndBtn(config) {
      */
     let addColumnBtn = document.createElement("button");
     addColumnBtn.click();
-    addColumnBtn.innerHTML = "Add column to bottom";
+    addColumnBtn.innerHTML = "Add column to the right";
     addColumnBtn.onclick = function () {
         addSingleColumn(config, config.numColumns);
     }
