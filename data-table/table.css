@@ -47,3 +47,42 @@
   border-width: 1px;
   border-style: solid;
 }
+
+.row-header-input{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+
+    width: 150px;
+    height: 46px;
+
+    background: #FFFFFF;
+    border: 2px solid #D9D9D9;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
+
+.cell-input{
+    display: inline-block;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+
+    width: 50px;
+    height: 25px;
+
+    background: #FFFFFF;
+    border: 2px solid #D9D9D9;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
+
+.cell-label{
+    white-space: nowrap;
+}
+
+.cell-label::after{
+    content: "\a";
+    white-space: pre;
+}

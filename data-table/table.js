@@ -26,8 +26,8 @@ class Config {
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
-        this.rowsName = clientConfig.rowsName === undefined ? "row" : clientConfig.rowsName;
-        this.columnsName = clientConfig.columnsName === undefined ? "column" : clientConfig.columnsName;
+        this.rowsName = clientConfig.rowsName === undefined ? "Row" : clientConfig.rowsName;
+        this.columnsName = clientConfig.columnsName === undefined ? "Column" : clientConfig.columnsName;
 
         /**
          * @property {string} wrapperDivId      - ID for the div passed in by the client
@@ -53,9 +53,9 @@ class Config {
          * @property {object} callbacks - Tells what function to execute when a field is changed | Default: ["None"]
          */
         this.datumConfig = {
-            names: clientConfig.names === undefined ? ["Value"] : clientConfig.names,
-            types: clientConfig.types === undefined ? [Number] : clientConfig.types,
-            values: clientConfig.values === undefined ? [0] : clientConfig.values,
+            names: clientConfig.names === undefined ? ["Value", "Elected?", "Status"] : clientConfig.names,
+            types: clientConfig.types === undefined ? [Number, Boolean, Object] : clientConfig.types,
+            values: clientConfig.values === undefined ? [0, false, ["Active", "Eliminated", "Elected"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
         }
     }
@@ -133,20 +133,40 @@ function createTable(config) {
     let tbody = document.createElement("tbody");
     tbody.id = config.tableIds.tbodyElementId;
 
+    table.appendChild(thead);
     table.appendChild(tbody);
     let tableDiv = document.getElementById(config.tableIds.tableDivId);
     tableDiv.appendChild(table);
     document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv)
 
+    createColumnHeader(config);
     addMultipleRows(config, config.numRows, 0);
-    addMultipleColumns(config.numRows);
 }
 
-function onColumnEntryBoxEnter(event, boxValue) {
-    /**
-     * Updates number of columns at user request
-     * TODO: Fill this out
-     */
+function createColumnHeader(config) {
+    // Insert a row into the body of the table
+    let row = document.getElementById(config.tableIds.theadElementId).insertRow(0);
+    // Then for each column
+    for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
+        // Create an entry cell
+        if (colIndex === 0) {
+            let cell = row.insertCell(colIndex);
+            cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
+            cell.classList.add("data-table-cell");
+
+            let middle = document.createTextNode("");
+
+            cell.appendChild(middle);
+        } else {
+            let cell = row.insertCell(colIndex);
+            cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
+            cell.classList.add("data-table-cell");
+
+            let middle = document.createTextNode(config.columnsName + " " + colIndex);
+
+            cell.appendChild(middle);
+        }
+    }
 }
 
 /**
@@ -166,14 +186,22 @@ function onColumnEntryBoxEnter(event, boxValue) {
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function addSingleColumn(config){ 
+function addSingleColumn(config){
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
     let numCols = table.rows[0].cells.length;
 
-    for(let rowIndex = 0; rowIndex < numRows; rowIndex++){
+    let cell = table.rows[0].insertCell(numCols);
+    cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
+    cell.classList.add("data-table-cell");
+
+    let middle = document.createTextNode(config.columnsName + " " + numCols);
+
+    cell.appendChild(middle);
+
+    for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
-        
+
     }
     config.numColumns += 1;
 }
@@ -200,69 +228,10 @@ function deleteColumns(config, numberOfColumns) {
 function deleteSingleColumn(config) {
      let table = document.getElementById(config.tableIds.tableElementId);
      let numRows = table.rows.length; // get length row right now
-    for (var i = 0; i < numRows; i++){
+    for (let i = 0; i < numRows; i++){
         table.rows[i].deleteCell(-1);
     }
-}
-
-/**
- * Creates a button that will call deleteSingleColumn().
- * FIXME: This currently only deletes the table's bottom-most row.
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
- function createColumnDeleteBtn(config) {
-    let deleteColumnBtn = document.createElement("button");
-    deleteColumnBtn.innerHTML = "Delete column from bottom";
-    deleteColumnBtn.onclick = function () {
-        deleteSingleColumn(config, config.numColumns - 1);
-    }
-    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteColumnBtn);
-}
-
-/**
- * Creates HTML elements by which the user can easily create rows with custom left-most cells.
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function createColumnEntryBox(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-    createColumnInputAndBtn(config);
-
-    /**
-     * TODO: This is brute-force formatting that should not exist in final code. Give the buttons appropriate margins
-     * and padding in the CSS file then take these lines out.
-     */
-    let br = document.createElement("br");
-    let br1 = document.createElement("br");
-    let br2 = document.createElement("br");
-
-    entryBoxDiv.appendChild(br);
-    entryBoxDiv.appendChild(br1);
-    entryBoxDiv.appendChild(br2);
-  
-    createColumnDeleteBtn(config);
-}
-
-/**
- * This function enables the user to enter the name of a column. Creates a field for text input
- * as well as a button that sends input text to addSingleColumn().
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-     /**
-     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
-     */
-    let addColumnBtn = document.createElement("button");
-    addColumnBtn.click();
-    addColumnBtn.innerHTML = "Add column to bottom";
-    addColumnBtn.onclick = function () {
-        addSingleColumn(config, config.numColumns);
-    }
-    entryBoxDiv.appendChild(addColumnBtn);
+    config.numColumns -= 1;
 }
 
 /**
@@ -294,10 +263,8 @@ function addSingleRow(config, rowIndex, content) {
     // Then for each column
     for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
         // Create an entry cell
-        if (colIndex === 0 && content === undefined) {
-            createEntryCell(config, row, rowIndex, colIndex, config.datumConfig.names[0]);
-        } else if (colIndex === 0) {
-            createEntryCell(config, row, rowIndex, colIndex, content);
+        if (colIndex === 0) {
+            createRowHeader(config, row, rowIndex, colIndex)
         } else {
             createEntryCell(config, row, rowIndex, colIndex, " (" + rowIndex + ", " + colIndex + ") ")
         }
@@ -306,6 +273,20 @@ function addSingleRow(config, rowIndex, content) {
     if (rowIndex >= config.numRows) {
         config.numRows += 1;
     }
+}
+
+function createRowHeader(config, row, rowIndex, colIndex) {
+
+    let cell = row.insertCell(colIndex);
+    cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.classList.add("data-table-cell");
+
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = config.rowsName + " " + (rowIndex + 1);
+    input.classList.add('row-header-input');
+    cell.appendChild(input);
+
 }
 
 /**
@@ -327,9 +308,51 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
 
-    let middle = document.createTextNode(content);
+    // add all the stuff from datumConfig
+    for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
+        let type = config.datumConfig.types[fieldNum];
 
-    cell.appendChild(middle);
+        let label = document.createElement("LABEL");
+        label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
+        label.classList.add('cell-label');
+
+        if (type === Number || type === String) {
+
+            let input = document.createElement("INPUT");
+            input.type = 'text';
+            input.placeholder = config.datumConfig.values[fieldNum];
+            input.classList.add('cell-input');
+
+            if (config.datumConfig.callbacks[fieldNum] !== undefined) {
+                input.addEventListener("focusout", function() {
+                    /**
+                     * FIXME: this is a placeholder implementation of a callback - do we need it?
+                     */
+                    // config.datumConfig.callbacks[fieldNum];
+                })
+            }
+            label.appendChild(input);
+        } else if (type === Boolean) {
+            let input = document.createElement("INPUT");
+            input.type = 'checkbox';
+            input.defaultChecked = config.datumConfig.values[fieldNum];
+            label.appendChild(input);
+        } else {
+            // At this point assume we have an array
+            let select = document.createElement("select");
+            for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
+                let option = document.createElement("option");
+                option.innerHTML = config.datumConfig.values[fieldNum][i];
+                select.appendChild(option);
+            }
+            label.appendChild(select);
+        }
+        cell.appendChild(label);
+    }
+
+    // let middle = document.createTextNode(content);
+    //
+    // cell.appendChild(middle);
 }
 
 /**
@@ -380,9 +403,9 @@ function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createEntryBox(config) {
-    createRowEntryBox(config);
-
     createColumnEntryBox(config);
+
+    createRowEntryBox(config);
 }
 
 /**
@@ -390,15 +413,10 @@ function createEntryBox(config) {
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function createRowEntryBox(config) {
+function createColumnEntryBox(config) {
     let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-
-    /**
-     * TODO: Implement (editable?) container for already existing row names
-     */
-
     createColumnInputAndBtn(config);
-    createRowInputAndBtn(config);
+    createColumnDeleteBtn(config);
 
     /**
      * TODO: This is brute-force formatting that should not exist in final code. Give the buttons appropriate margins
@@ -412,8 +430,28 @@ function createRowEntryBox(config) {
     entryBoxDiv.appendChild(br1);
     entryBoxDiv.appendChild(br2);
 
-    createRowDeleteBtn(config);
 }
+
+// /**
+//  * This function enables the user to enter the name of a column. Creates a field for text input
+//  * as well as a button that sends input text to addSingleColumn().
+//  * @param {object} config   - Table configuration object
+//  * @returns {undefined}     - Doesn't return anything
+//  */
+// function createColumnInputAndBtn(config) {
+//     let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+//     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
+//     /**
+//      * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
+//      */
+//     let addColumnBtn = document.createElement("button");
+//     addColumnBtn.click();
+//     addColumnBtn.innerHTML = "Add column to bottom";
+//     addColumnBtn.onclick = function () {
+//         addSingleColumn(config);
+//     }
+//     entryBoxDiv.appendChild(addColumnBtn);
+// }
 
 /**
  * This function enables the user to enter the name of a column. Creates a field for text input
@@ -426,7 +464,11 @@ function createColumnInputAndBtn(config) {
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
-    input.placeholder = "Enter " + config.datumConfig.columnsName;
+    /**
+     * FIXME: Brute force pluralization below, need a better way to do this
+     */
+    input.placeholder = "Number of " + config.columnsName + "s";
+    input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addColumnBtn
     input.addEventListener("keyup", function(event) {
@@ -443,6 +485,7 @@ function createColumnInputAndBtn(config) {
      * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
      */
     let addColumnBtn = document.createElement("button");
+    addColumnBtn.classList.add("add-row-button");
     addColumnBtn.innerHTML = "Add column to right";
     addColumnBtn.onclick = function () {
         let value = input.value.trim();
@@ -457,17 +500,36 @@ function createColumnInputAndBtn(config) {
 }
 
 /**
- * TODO: Decide to keep/delete this function. Currently not used for anything.
- * This function takes the id of the list container for the candidates names
- * It then adds to the list another space for another candidate at the bottom of the list
+ * Creates a button that will call deleteSingleColumn().
+ * FIXME: This currently only deletes the table's bottom-most row.
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function addRow(config) {
-    let container = document.getElementById(config.tableIds.entryBoxDivId);
-    let child = document.createElement("DIV");
-    child.innerHTML = "Enter " + config.datumConfig.names + ":";
-    container.appendChild(child);
+function createColumnDeleteBtn(config) {
+    let deleteColumnBtn = document.createElement("button");
+    deleteColumnBtn.innerHTML = "Delete column from right";
+    deleteColumnBtn.classList.add("add-row-button");
+    deleteColumnBtn.onclick = function () {
+        deleteSingleColumn(config);
+    }
+    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteColumnBtn);
+}
+
+/**
+ * Creates HTML elements by which the user can easily create rows with custom left-most cells.
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function createRowEntryBox(config) {
+    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+
+    /**
+     * TODO: Implement (editable?) container for already existing row names
+     */
+
+    createRowInputAndBtn(config);
+
+    createRowDeleteBtn(config);
 }
 
 /**
@@ -482,7 +544,7 @@ function createRowInputAndBtn(config) {
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
-    input.placeholder = "Enter " + config.datumConfig.names;
+    input.placeholder = "Enter " + config.rowsName + " Name";
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
@@ -499,7 +561,7 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
-    addRowBtn.innerHTML = "+ Add a " + config.rowsName;
+    addRowBtn.innerHTML = "+ Add a " + config.rowsName + " to the bottom";
     addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
         let value = input.value.trim();
@@ -521,7 +583,7 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
-    deleteRowBtn.innerHTML = "Delete a " + config.rowsName;
+    deleteRowBtn.innerHTML = "Delete a " + config.rowsName + " from the bottom";
     deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
@@ -548,15 +610,6 @@ function createResetButton(clientConfig) {
     }
     wrapperDiv.appendChild(resetBtn);
 }
-
-function createColumnEntryBox(config) {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the columns
-     * TODO: Fill this out
-     */
-}
-
 
 function toJSON() {
     /**
