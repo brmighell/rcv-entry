@@ -546,8 +546,8 @@ function createResetButton(clientConfig) {
 /**
  * Function available to client in order to create a datatable.
  * @param {object} clientConfig - Client configuration requests
+ * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars,camelcase
 function dtCreateDataTable(clientConfig) {
     setConfig(clientConfig);
 
