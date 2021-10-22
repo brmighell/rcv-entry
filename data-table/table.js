@@ -18,12 +18,16 @@ class Config {
      * @property {string} wrapperDivId  - ID for the wrapper
      * @property {number} numRows       - Number of rows in the table
      * @property {number} numColumns    - Number of columns in the table
+     * @property {string} rowsName      - Name of rows in the table
+     * @property {string} columnsName   - Name of columns in the table
      * @property {object} tableIds      - Container for all the table's magic strings
      * @property {object} datumConfig   - Container for default values of a cell
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
+        this.rowsName = clientConfig.rowsName === undefined ? "row" : clientConfig.rowsName;
+        this.columnsName = clientConfig.columnsName === undefined ? "column" : clientConfig.columnsName;
 
         /**
          * @property {string} wrapperDivId      - ID for the div passed in by the client
@@ -121,6 +125,7 @@ function createSubDivs(config) {
 function createTable(config) {
     let table = document.createElement("table");
     table.id = config.tableIds.tableElementId;
+    table.classList.add("data-table");
 
     let thead = document.createElement("thead");
     thead.id = config.tableIds.theadElementId;
@@ -236,7 +241,7 @@ function createColumnEntryBox(config) {
     entryBoxDiv.appendChild(br);
     entryBoxDiv.appendChild(br1);
     entryBoxDiv.appendChild(br2);
-
+  
     createColumnDeleteBtn(config);
 }
 
@@ -321,6 +326,7 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
 
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.classList.add("data-table-cell");
 
     let middle = document.createTextNode(content);
 
@@ -436,6 +442,7 @@ function createRowInputAndBtn(config) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = "Enter " + config.datumConfig.names;
+    input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
     input.addEventListener("keyup", function(event) {
@@ -451,7 +458,8 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
-    addRowBtn.innerHTML = "Add row to bottom";
+    addRowBtn.innerHTML = "+ Add a " + config.rowsName;
+    addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
@@ -472,7 +480,8 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
-    deleteRowBtn.innerHTML = "Delete row from bottom";
+    deleteRowBtn.innerHTML = "Delete a " + config.rowsName;
+    deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
@@ -527,26 +536,6 @@ function hideHelpTooltip() {
 }
 
 /**
- * This function clears out an old table and reinitializes it with the previously passed-in clientConfig
- * @param {object} clientConfig - Client configuration requests
- * @returns {undefined}         - Doesn't return anything
- */
-function createResetButton(clientConfig) {
-    let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
-
-    let resetBtn = document.createElement("button");
-    resetBtn.innerHTML = "Reset the table";
-
-    // Clears the wrapper div, deletes the old config object, and calls dt_CreateDataTable again
-    resetBtn.onclick = function () {
-        wrapperDiv.innerHTML = '';
-        Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
-        dt_CreateDataTable(clientConfig);
-    }
-    wrapperDiv.appendChild(resetBtn);
-}
-
-/**
  * Public functions below
  */
 
@@ -562,8 +551,6 @@ function dt_CreateDataTable(clientConfig) {
 
     createTable(configDict[clientConfig.wrapperDivId]);
 
-    createResetButton(clientConfig);
-  
     createEntryBox(configDict[clientConfig.wrapperDivId])
 
 }
