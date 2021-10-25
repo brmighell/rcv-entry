@@ -145,6 +145,7 @@ function createTable(config) {
 // eslint-disable-next-line no-unused-vars
 /** function onColumnEntryBoxEnter(event, boxValue) {
      * Updates number of columns at user request
+     * TODO: Implement Serialization
      * TODO: Fill this out
 } */
 
@@ -179,6 +180,8 @@ function addSingleColumn(config){
 
 /**
  * Deletes multiple Columns from an existing table
+ *
+ * TODO: Implement Serialization
  *
  * @param {object} config       - Table configuration object
  * @param {Number} numberOfColumns - The number of columns to be deleted
@@ -335,6 +338,7 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
  * Deletes multiple rows from an existing table
  *
  * FIXME: This will work when deleting from the bottom of the table but might not from the middle!
+ * TODO: Implement Serialization
  *
  * @param {object} config       - Table configuration object
  * @param {Number} numberOfRows - The number of rows to be deleted
@@ -497,46 +501,7 @@ function createResetButton(clientConfig) {
 /** function toJSON() {
      * Parses data held in HTML to JSON and sends it to client
      * TODO: Fill this out
-} */
-
-// eslint-disable-next-line no-unused-vars
-/** function getFieldId(row, col, fieldName) {
-    /**
-     * Transforms arguments into a magic string for accessing HTML
-     * TODO: Fill this out
-} */
-
-// eslint-disable-next-line no-unused-vars
-/** function getCellId(row, col) {
-    /**
-     * Transforms arguments into a magic string for accessing HTML
-     * TODO: Fill this out
-} */
-
-// eslint-disable-next-line no-unused-vars
-/** function showHelpTooltip(event) {
-    /**
-     * Uses the data-label attribute and converts it to a tooltip
-    const helpText = event.target.getAttribute('data-label');
-
-    let div = document.createElement('div');
-    div.id = 'timeline-info-tooltip';
-    div.innerHTML = helpText;
-    div.style.position = 'fixed';
-    div.style.left = (event.clientX+5) + 'px';
-    div.style.top = (event.clientY-30) + 'px';
-
-    // To ensure tooltip is never transparent,
-    // find the first non-transparent element in the hierarchy and add it there
-    const firstNonTransparentElement = event.target.parentElement.parentElement.parentElement;
-    firstNonTransparentElement.appendChild(div);
-} */
-
-// eslint-disable-next-line no-unused-vars
-/** function hideHelpTooltip() {
-    /**
-     * Hides the tooltip created by showHelpTooltip
-    document.getElementById('timeline-info-tooltip').remove();
+     * TODO: Implement Serialization
 } */
 
 /**
@@ -565,24 +530,28 @@ function dtCreateDataTable(clientConfig) {
 /** function dtDisableField(row, col, fieldName) {
      * Calls getFieldId() then disables a specific field in a specific cell
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtEnableField(row, col, fieldName) {
      * Calls getFieldId() then enables a specific field in a specific cell
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtDisableCell(row, col) {
      * Calls getCellId() then disables all fields of a specific cell
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtEnableCell(row, col) {
      * Calls getCellId() then enables all fields of a specific cell
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
@@ -590,6 +559,7 @@ function dtCreateDataTable(clientConfig) {
      * Calls getFieldId() then updates a specific field in a
      * specific cell to a given value
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
@@ -597,6 +567,7 @@ function dtCreateDataTable(clientConfig) {
      * Calls getFieldId() then retrieves a value from
      * a specific field in a specific cell
      * TODO: Fill this out
+     * TODO: Implement Serialization
 } */
 
 
