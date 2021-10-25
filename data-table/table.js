@@ -139,15 +139,15 @@ function createTable(config) {
     document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv)
 
     addMultipleRows(config, config.numRows, 0);
-    addMultipleColumns(config.numRows);
+    addMultipleColumns(config, config.numColumns);
 }
 
-function onColumnEntryBoxEnter(event, boxValue) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function onColumnEntryBoxEnter(event, boxValue) {
      * Updates number of columns at user request
+     * TODO: Implement Serialization
      * TODO: Fill this out
-     */
-}
+} */
 
 /**
  * Adds columns to the table.
@@ -162,18 +162,18 @@ function onColumnEntryBoxEnter(event, boxValue) {
 }
 
 /**
- * Adds a single colunm to the table
+ * Adds a single column to the table
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function addSingleColumn(config){ 
+function addSingleColumn(config){
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
     let numCols = table.rows[0].cells.length;
 
     for(let rowIndex = 0; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
-        
+
     }
     config.numColumns += 1;
 }
@@ -181,18 +181,20 @@ function addSingleColumn(config){
 /**
  * Deletes multiple Columns from an existing table
  *
+ * TODO: Implement Serialization
+ *
  * @param {object} config       - Table configuration object
  * @param {Number} numberOfColumns - The number of columns to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-function deleteColumns(config, numberOfColumns) {
+/** function deleteColumns(config, numberOfColumns) {
     for(let i = 0; i < numberOfColumns; i++){
         deleteSingleColumn(config);
     }
-}
+} */
 
 /**
- * Deletes a single Column from an existing table (detle from the bottom of the table)
+ * Deletes a single Column from an existing table (delete from the bottom of the table)
  *
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
@@ -200,7 +202,7 @@ function deleteColumns(config, numberOfColumns) {
 function deleteSingleColumn(config) {
      let table = document.getElementById(config.tableIds.tableElementId);
      let numRows = table.rows.length; // get length row right now
-    for (var i = 0; i < numRows; i++){
+    for (let i = 0; i < numRows; i++){
         table.rows[i].deleteCell(-1);
     }
 }
@@ -215,7 +217,7 @@ function deleteSingleColumn(config) {
     let deleteColumnBtn = document.createElement("button");
     deleteColumnBtn.innerHTML = "Delete column from bottom";
     deleteColumnBtn.onclick = function () {
-        deleteSingleColumn(config, config.numColumns - 1);
+        deleteSingleColumn(config.numColumns - 1);
     }
     document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteColumnBtn);
 }
@@ -240,7 +242,7 @@ function createColumnEntryBox(config) {
     entryBoxDiv.appendChild(br);
     entryBoxDiv.appendChild(br1);
     entryBoxDiv.appendChild(br2);
-  
+
     createColumnDeleteBtn(config);
 }
 
@@ -258,9 +260,9 @@ function createColumnInputAndBtn(config) {
      */
     let addColumnBtn = document.createElement("button");
     addColumnBtn.click();
-    addColumnBtn.innerHTML = "Add column to bottom";
+    addColumnBtn.innerHTML = "Add column to right";
     addColumnBtn.onclick = function () {
-        addSingleColumn(config, config.numColumns);
+        addSingleColumn(config.numColumns);
     }
     entryBoxDiv.appendChild(addColumnBtn);
 }
@@ -336,18 +338,19 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
  * Deletes multiple rows from an existing table
  *
  * FIXME: This will work when deleting from the bottom of the table but might not from the middle!
+ * TODO: Implement Serialization
  *
  * @param {object} config       - Table configuration object
  * @param {Number} numberOfRows - The number of rows to be deleted
  * @param {Number} rowIndex     - The index of the top-most row to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-function deleteRows(config, numberOfRows, rowIndex) {
+/** function deleteRows(config, numberOfRows, rowIndex) {
     // Deletes from bottom up
     for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
         deleteSingleRow(config, rowIndex + rowNum);
     }
-}
+} */
 
 /**
  * Deletes a single row from an existing table
@@ -416,61 +419,6 @@ function createRowEntryBox(config) {
 }
 
 /**
- * This function enables the user to enter the name of a column. Creates a field for text input
- * as well as a button that sends input text to addSingleColumn().
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-    // Creates the field for text input
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.placeholder = "Enter " + config.datumConfig.columnsName;
-
-    // If the user hits enter while in the text box, click the addColumnBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-
-        if (event.code === "Enter") {
-            addColumnBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
-    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-    /**
-     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
-     */
-    let addColumnBtn = document.createElement("button");
-    addColumnBtn.innerHTML = "Add column to right";
-    addColumnBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addSingleColumn(config, config.numColumns, value);
-        } else {
-            addSingleColumn(config, config.numColumns, config.columnsName);
-        }
-        input.value = '';
-    }
-    entryBoxDiv.appendChild(addColumnBtn);
-}
-
-/**
- * TODO: Decide to keep/delete this function. Currently not used for anything.
- * This function takes the id of the list container for the candidates names
- * It then adds to the list another space for another candidate at the bottom of the list
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function addRow(config) {
-    let container = document.getElementById(config.tableIds.entryBoxDivId);
-    let child = document.createElement("DIV");
-    child.innerHTML = "Enter " + config.datumConfig.names + ":";
-    container.appendChild(child);
-}
-
-/**
  * This function enables the user to enter the name of a row. Creates a field for text input
  * as well as a button that sends input text to addSingleRow().
  * @param {object} config   - Table configuration object
@@ -530,7 +478,7 @@ function createRowDeleteBtn(config) {
 }
 
 /**
- * This function clears out an old table and reinitializes it with the previously passed-in clientConfig
+ * This function clears out an old table and reinitialize it with the previously passed-in clientConfig
  * @param {object} clientConfig - Client configuration requests
  * @returns {undefined}         - Doesn't return anything
  */
@@ -544,66 +492,17 @@ function createResetButton(clientConfig) {
     resetBtn.onclick = function () {
         wrapperDiv.innerHTML = '';
         Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
-        dt_CreateDataTable(clientConfig);
+        dtCreateDataTable(clientConfig);
     }
     wrapperDiv.appendChild(resetBtn);
 }
 
-function createColumnEntryBox(config) {
-    /**
-     * Creates the HTML element that will allow the user to manually
-     * affect the columns
-     * TODO: Fill this out
-     */
-}
-
-
-function toJSON() {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function toJSON() {
      * Parses data held in HTML to JSON and sends it to client
      * TODO: Fill this out
-     */
-}
-
-function getFieldId(row, col, fieldName) {
-    /**
-     * Transforms arguments into a magic string for accessing HTML
-     * TODO: Fill this out
-     */
-}
-
-function getCellId(row, col) {
-    /**
-     * Transforms arguments into a magic string for accessing HTML
-     * TODO: Fill this out
-     */
-}
-
-function showHelpTooltip(event) {
-    /**
-     * Uses the data-label attribute and converts it to a tooltip
-     */
-    const helpText = event.target.getAttribute('data-label');
-
-    let div = document.createElement('div');
-    div.id = 'timeline-info-tooltip';
-    div.innerHTML = helpText;
-    div.style.position = 'fixed';
-    div.style.left = (event.clientX+5) + 'px';
-    div.style.top = (event.clientY-30) + 'px';
-
-    // To ensure tooltip is never transparent,
-    // find the first non-transparent element in the hierarchy and add it there
-    const firstNonTransparentElement = event.target.parentElement.parentElement.parentElement;
-    firstNonTransparentElement.appendChild(div);
-}
-
-function hideHelpTooltip() {
-    /**
-     * Hides the tooltip created by showHelpTooltip
-     */
-    document.getElementById('timeline-info-tooltip').remove();
-}
+     * TODO: Implement Serialization
+} */
 
 /**
  * Public functions below
@@ -612,9 +511,9 @@ function hideHelpTooltip() {
 /**
  * Function available to client in order to create a datatable.
  * @param {object} clientConfig - Client configuration requests
+ * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars,camelcase
-function dt_CreateDataTable(clientConfig) {
+function dtCreateDataTable(clientConfig) {
     setConfig(clientConfig);
 
     createSubDivs(configDict[clientConfig.wrapperDivId]);
@@ -627,53 +526,53 @@ function dt_CreateDataTable(clientConfig) {
 
 }
 
-function dt_disableField(row, col, fieldName) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtDisableField(row, col, fieldName) {
      * Calls getFieldId() then disables a specific field in a specific cell
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
-function dt_enableField(row, col, fieldName) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtEnableField(row, col, fieldName) {
      * Calls getFieldId() then enables a specific field in a specific cell
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
-function dt_disableCell(row, col) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtDisableCell(row, col) {
      * Calls getCellId() then disables all fields of a specific cell
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
-function dt_enableCell(row, col) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtEnableCell(row, col) {
      * Calls getCellId() then enables all fields of a specific cell
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
-function dt_setFieldValue(row, col, fieldName, value) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtSetFieldValue(row, col, fieldName, value) {
      * Calls getFieldId() then updates a specific field in a
      * specific cell to a given value
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
-function dt_getFieldValue(row, col, fieldName, value) {
-    /**
+// eslint-disable-next-line no-unused-vars
+/** function dtGetFieldValue(row, col, fieldName, value) {
      * Calls getFieldId() then retrieves a value from
      * a specific field in a specific cell
      * TODO: Fill this out
-     */
-}
+     * TODO: Implement Serialization
+} */
 
 
 // In case of node.js
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
-    exports.createDataTable = dt_createDataTable;
+    exports.createDataTable = dtCreateDataTable;
 }
