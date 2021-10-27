@@ -297,11 +297,10 @@ function createRowHeader(config, row, rowIndex, colIndex) {
  * @param {HTMLTableRowElement} row - HTML table element to which the cell will be added
  * @param {Number} rowIndex         - The index of the row, used to create the cell's magic string
  * @param {Number} colIndex         - The index of the column, used to create the cell's magic string
- * @param {String} content          - The content of the cell
  * @returns {undefined}             - Doesn't return anything
  */
 // eslint-disable-next-line max-params
-function createEntryCell(config, row, rowIndex, colIndex, content) {
+function createEntryCell(config, row, rowIndex, colIndex) {
     /**
      * TODO: Set this up to deal with default fields
      */
@@ -511,8 +510,6 @@ function createColumnDeleteBtn(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowEntryBox(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-
     /**
      * TODO: Implement (editable?) container for already existing row names
      */
