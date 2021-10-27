@@ -25,7 +25,7 @@ class Config {
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
-        this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns;
+        this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns + 1;
         this.rowsName = clientConfig.rowsName === undefined ? "Row" : clientConfig.rowsName;
         this.columnsName = clientConfig.columnsName === undefined ? "Column" : clientConfig.columnsName;
 
@@ -53,9 +53,9 @@ class Config {
          * @property {object} callbacks - Tells what function to execute when a field is changed | Default: ["None"]
          */
         this.datumConfig = {
-            names: clientConfig.names === undefined ? ["Value", "Most Stylish", "Status"] : clientConfig.names,
-            types: clientConfig.types === undefined ? [Number, Boolean, Object] : clientConfig.types,
-            values: clientConfig.values === undefined ? [0, false, ["Active", "Eliminated", "Elected"]] : clientConfig.values,
+            names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
+            types: clientConfig.types === undefined ? [Number, Object] : clientConfig.types,
+            values: clientConfig.values === undefined ? [0, ["Active", "Eliminated", "Elected"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
         }
     }
@@ -154,7 +154,7 @@ function createColumnHeader(config) {
             cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
             cell.classList.add("data-table-cell");
 
-            let middle = document.createTextNode("");
+            let middle = document.createTextNode(config.rowsName);
 
             cell.appendChild(middle);
         } else {
@@ -200,7 +200,7 @@ function addSingleColumn(config){
     cell.appendChild(middle);
 
     for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
-        createEntryCell(config, table.rows[rowIndex], rowIndex, numCols, " (" + rowIndex + ", " + numCols + ") ");
+        createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
 
     }
     config.numColumns += 1;
@@ -215,11 +215,11 @@ function addSingleColumn(config){
  * @param {Number} numberOfColumns - The number of columns to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-/** function deleteColumns(config, numberOfColumns) {
+function deleteColumns(config, numberOfColumns) {
     for(let i = 0; i < numberOfColumns; i++){
         deleteSingleColumn(config);
     }
-} */
+}
 
 /**
  * Deletes a single Column from an existing table (delete from the bottom of the table)
@@ -268,7 +268,7 @@ function addSingleRow(config, rowIndex, content) {
         if (colIndex === 0) {
             createRowHeader(config, row, rowIndex, colIndex, content)
         } else {
-            createEntryCell(config, row, rowIndex, colIndex, " (" + rowIndex + ", " + colIndex + ") ")
+            createEntryCell(config, row, rowIndex, colIndex)
         }
     }
 
@@ -277,18 +277,18 @@ function addSingleRow(config, rowIndex, content) {
     }
 }
 
-function createRowHeader(config, row, rowIndex, colIndex) {
+// eslint-disable-next-line max-params
+function createRowHeader(config, row, rowIndex, colIndex, content) {
 
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
 
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.placeholder = config.rowsName + " " + (rowIndex + 1);
-    input.classList.add('row-header-input');
-    cell.appendChild(input);
-
+    if (content === undefined) {
+        cell.innerHTML = (rowIndex + 1);
+    } else {
+        cell.innerHTML = content;
+    }
 }
 
 /**
@@ -297,14 +297,9 @@ function createRowHeader(config, row, rowIndex, colIndex) {
  * @param {HTMLTableRowElement} row - HTML table element to which the cell will be added
  * @param {Number} rowIndex         - The index of the row, used to create the cell's magic string
  * @param {Number} colIndex         - The index of the column, used to create the cell's magic string
- * @param {String} content          - The content of the cell
  * @returns {undefined}             - Doesn't return anything
  */
-// eslint-disable-next-line max-params
-function createEntryCell(config, row, rowIndex, colIndex, content) {
-    /**
-     * TODO: Set this up to deal with default fields
-     */
+function createEntryCell(config, row, rowIndex, colIndex) {
 
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
@@ -337,11 +332,13 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
+            input.classList.add('cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             label.appendChild(input);
         } else {
             // At this point assume we have an array
             let select = document.createElement("select");
+            select.classList.add('cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
                 let option = document.createElement("option");
                 option.innerHTML = config.datumConfig.values[fieldNum][i];
@@ -351,10 +348,6 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
         }
         cell.appendChild(label);
     }
-
-    // let middle = document.createTextNode(content);
-    //
-    // cell.appendChild(middle);
 }
 
 /**
@@ -368,12 +361,13 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
  * @param {Number} rowIndex     - The index of the top-most row to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-/** function deleteRows(config, numberOfRows, rowIndex) {
+/**
+function deleteRows(config, numberOfRows, rowIndex) {
     // Deletes from bottom up
     for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
         deleteSingleRow(config, rowIndex + rowNum);
     }
-} */
+}*/
 
 /**
  * Deletes a single row from an existing table
@@ -397,7 +391,7 @@ function deleteSingleRow(config, rowIndex) {
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
-    return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex + "_";
+    return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex;
 }
 
 /**
@@ -417,22 +411,8 @@ function createEntryBox(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createColumnEntryBox(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
     createColumnInputAndBtn(config);
     createColumnDeleteBtn(config);
-
-    /**
-     * TODO: This is brute-force formatting that should not exist in final code. Give the buttons appropriate margins
-     * and padding in the CSS file then take these lines out.
-     */
-    let br = document.createElement("br");
-    let br1 = document.createElement("br");
-    let br2 = document.createElement("br");
-
-    entryBoxDiv.appendChild(br);
-    entryBoxDiv.appendChild(br1);
-    entryBoxDiv.appendChild(br2);
-
 }
 
 /**
@@ -511,8 +491,6 @@ function createColumnDeleteBtn(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowEntryBox(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-
     /**
      * TODO: Implement (editable?) container for already existing row names
      */
@@ -537,6 +515,7 @@ function createRowInputAndBtn(config) {
      */
     let input = document.createElement("INPUT");
     input.type = 'text';
+    input.id = config.wrapperDivId + "row_input";
     input.placeholder = "Enter " + config.rowsName + " Name";
     input.classList.add('enter-row-name');
 
@@ -595,7 +574,7 @@ function createResetButton(clientConfig) {
     let resetBtn = document.createElement("button");
     resetBtn.innerHTML = "Reset the table";
 
-    // Clears the wrapper div, deletes the old config object, and calls dt_CreateDataTable again
+    // Clears the wrapper div, deletes the old config object, and calls dtCreateDataTable again
     resetBtn.onclick = function () {
         wrapperDiv.innerHTML = '';
         Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
