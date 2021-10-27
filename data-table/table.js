@@ -275,7 +275,7 @@ function addSingleRow(config, rowIndex, content) {
     }
 }
 
-function createRowHeader(config, row, rowIndex, colIndex, content) {
+function createRowHeader(config, row, rowIndex, colIndex) {
 
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
@@ -285,9 +285,6 @@ function createRowHeader(config, row, rowIndex, colIndex, content) {
     input.type = 'text';
     input.placeholder = config.rowsName + " " + (rowIndex + 1);
     input.classList.add('row-header-input');
-    if (content !== undefined) {
-        input.value = content;
-    }
     cell.appendChild(input);
 
 }
