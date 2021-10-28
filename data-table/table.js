@@ -215,11 +215,11 @@ function addSingleColumn(config){
  * @param {Number} numberOfColumns - The number of columns to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-function deleteColumns(config, numberOfColumns) {
+/** function deleteColumns(config, numberOfColumns) {
     for(let i = 0; i < numberOfColumns; i++){
         deleteSingleColumn(config);
     }
-}
+} */
 
 /**
  * Deletes a single Column from an existing table (delete from the bottom of the table)
