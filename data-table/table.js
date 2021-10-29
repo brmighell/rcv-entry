@@ -427,7 +427,7 @@ function createRowEntryBox(config, numRows) {
     // Create a dropdown of all the rows.
     // Call the add row method that creates all the given rows in the dropdown.
     for(let i = 0; i < numRows; i++) {
-        addMultipleRows(config, numRows, i);
+        addRow(config);
     }
 
     createColumnInputAndBtn(config);
@@ -446,6 +446,19 @@ function createRowEntryBox(config, numRows) {
     entryBoxDiv.appendChild(br2);
 
     createRowDeleteBtn(config);
+}
+
+/**
+ * This function takes the id of the list container for the candidates names
+ * It then adds to the list another space for another candidate at the bottom of the list
+ * @param {object} config   - Table configuration object
+ * @returns {undefined}     - Doesn't return anything
+ */
+function addRow(config) {
+    let container = document.getElementById(config.tableIds.entryBoxDivId);
+    let child = document.createElement("DIV");
+    child.innerHTML = "Enter " + config.datumConfig.names + ":";
+    container.appendChild(child);
 }
 
 /**
