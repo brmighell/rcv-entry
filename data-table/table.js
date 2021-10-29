@@ -310,6 +310,33 @@ function addSingleRow(config, rowIndex, content) {
     }
 }
 
+// eslint-disable-next-line valid-jsdoc
+/**
+ *  This function handles the event when the user inputs the
+ *  numbers of rows in the row input.
+ *  It creates the given number of additional rows to the data table.
+ *  If the box value requires less number of rows than already exists,
+ *  remove the excess rows from the table starting from the last row
+ *  If additional rows are needed, create the additional rows starting from the last row's index
+ *
+ *  @param {object} config  - table configuration object
+ *  @param {number} boxValue - the box entry value
+ *  @returns {undefined}     - Doesn't return anything
+ */
+
+// eslint-disable-next-line no-unused-vars
+function onRowEntryBoxEnter(config, boxValue) {
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // Get length row right now.
+    // Delete rows that are excess of the box value from the bottom of the table.
+    if(numRows > boxValue) {
+        deleteRows(config, numRows - boxValue, numRows);
+    }else {
+        // Add the rows to the bottom of the data table
+        addMultipleRows(config, boxValue - numRows, numRows);
+    }
+}
+
 /**
  * Adds a cell to a specific index on a passed-in row
  * @param {object} config           - Table configuration object
@@ -345,12 +372,12 @@ function createEntryCell(config, row, rowIndex, colIndex, content) {
  * @param {Number} rowIndex     - The index of the top-most row to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-/** function deleteRows(config, numberOfRows, rowIndex) {
+function deleteRows(config, numberOfRows, rowIndex) {
     // Deletes from bottom up
     for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
         deleteSingleRow(config, rowIndex + rowNum);
     }
-} */
+}
 
 /**
  * Deletes a single row from an existing table
@@ -391,14 +418,17 @@ function createEntryBox(config) {
 /**
  * Creates HTML elements by which the user can easily create rows with custom left-most cells.
  * @param {object} config   - Table configuration object
+ * @param {number} numRows  -  Number of rows
  * @returns {undefined}     - Doesn't return anything
  */
-function createRowEntryBox(config) {
+function createRowEntryBox(config, numRows) {
     let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
 
-    /**
-     * TODO: Implement (editable?) container for already existing row names
-     */
+    // Create a dropdown of all the rows.
+    // Call the add row method that creates all the given rows in the dropdown.
+    for(let i = 0; i < numRows; i++) {
+        addMultipleRows(config, numRows, i);
+    }
 
     createColumnInputAndBtn(config);
     createRowInputAndBtn(config);
