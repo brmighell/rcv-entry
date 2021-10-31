@@ -215,6 +215,7 @@ function deleteSingleColumn(config) {
  */
  function createColumnDeleteBtn(config) {
     let deleteColumnBtn = document.createElement("button");
+    deleteColumnBtn.type = "button";
     deleteColumnBtn.innerHTML = "Delete column from bottom";
     deleteColumnBtn.onclick = function () {
         deleteSingleColumn(config.numColumns - 1);
@@ -259,6 +260,7 @@ function createColumnInputAndBtn(config) {
      * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
      */
     let addColumnBtn = document.createElement("button");
+    addColumnBtn.type = "button";
     addColumnBtn.click();
     addColumnBtn.innerHTML = "Add column to right";
     addColumnBtn.onclick = function () {
@@ -447,6 +449,7 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
+    addRowBtn.type = "button";
     addRowBtn.innerHTML = "+ Add a " + config.rowsName;
     addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
@@ -469,6 +472,7 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
+    deleteRowBtn.type = "button";
     deleteRowBtn.innerHTML = "Delete a " + config.rowsName;
     deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
@@ -486,6 +490,7 @@ function createResetButton(clientConfig) {
     let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
 
     let resetBtn = document.createElement("button");
+    resetBtn.type = "button";
     resetBtn.innerHTML = "Reset the table";
 
     // Clears the wrapper div, deletes the old config object, and calls dt_CreateDataTable again
