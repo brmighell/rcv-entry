@@ -245,26 +245,6 @@ function createColumnEntryBox(config) {
     createColumnDeleteBtn(config);
 }
 
-/**
- * This function enables the user to enter the name of a column. Creates a field for text input
- * as well as a button that sends input text to addSingleColumn().
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-     /**
-     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
-     */
-    let addColumnBtn = document.createElement("button");
-    addColumnBtn.click();
-    addColumnBtn.innerHTML = "Add column to the right";
-    addColumnBtn.onclick = function () {
-        addSingleColumn(config, config.numColumns);
-    }
-    entryBoxDiv.appendChild(addColumnBtn);
-}
 
 /**
  * Adds rows to the table.
@@ -550,13 +530,15 @@ function createResetButton(clientConfig) {
     wrapperDiv.appendChild(resetBtn);
 }
 
-function createColumnEntryBox(config) {
+
+// function createColumnEntryBox(config) {
     /**
      * Creates the HTML element that will allow the user to manually
      * affect the columns
      * TODO: Fill this out
      */
-}
+// }
+
 
 
 function toJSON() {
@@ -676,5 +658,7 @@ function dt_getFieldValue(row, col, fieldName, value) {
 // In case of node.js
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
-    exports.createDataTable = dt_createDataTable;
+    exports.createDataTable = dt_CreateDataTable;
+    exports.configDict = configDict;
+    exports.validateConfig = validateConfig;
 }
