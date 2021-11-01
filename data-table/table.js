@@ -581,4 +581,7 @@ function dtCreateDataTable(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.configDict = configDict;
+    exports.validateConfig = validateConfig;
 }
+
