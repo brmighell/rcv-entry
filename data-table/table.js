@@ -25,12 +25,19 @@ class Config {
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
+        /* numColumns also accounts for row names - assumes that the user is asking for:
+           "this many columns plus one column for row names" */
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns + 1;
         this.rowsName = clientConfig.rowsName === undefined ? "Row" : clientConfig.rowsName;
         this.columnsName = clientConfig.columnsName === undefined ? "Column" : clientConfig.columnsName;
+        /**
+         * TODO: Need to add some sort of check to account for when this pluralization doesn't work
+         */
+        this.rowsNamePlural = this.rowsName + "s";
+        this.columnsNamePlural = this.columnsName + "s";
+        this.wrapperDivId = clientConfig.wrapperDivId;
 
         /**
-         * @property {string} wrapperDivId      - ID for the div passed in by the client
          * @property {string} tableDivId        - ID for the div containing the table
          * @property {string} entryBoxDivId     - ID for the div containing the entry box
          * @property {string} tableElementId    - Id for the entire table element
@@ -38,12 +45,16 @@ class Config {
          * @property {string} tbodyElementId    - ID for the table's body element
          */
         this.tableIds = {
-            wrapperDivId: clientConfig.wrapperDivId,
             tableDivId: '_tableDivId_' + clientConfig.wrapperDivId,
-            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
             tableElementId: '_tableId_' + clientConfig.wrapperDivId,
             theadElementId: '_theadId_' + clientConfig.wrapperDivId,
             tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId
+        }
+
+        this.entryIds = {
+            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
+            colInputId: '_colInputId_' + clientConfig.wrapperDivId,
+            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId
         }
 
         /**
@@ -54,8 +65,8 @@ class Config {
          */
         this.datumConfig = {
             names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
-            types: clientConfig.types === undefined ? [Number, Object] : clientConfig.types,
-            values: clientConfig.values === undefined ? [0, ["Active", "Eliminated", "Elected"]] : clientConfig.values,
+            types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
+            values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
         }
     }
@@ -106,15 +117,15 @@ function createSubDivs(config) {
     let subDivClass = "SubDiv";
 
     let entryBoxDiv = document.createElement("div");
-    entryBoxDiv.id = config.tableIds.entryBoxDivId;
+    entryBoxDiv.id = config.entryIds.entryBoxDivId;
     entryBoxDiv.classList.add(subDivClass);
 
     let tableDiv = document.createElement("div");
     tableDiv.id = config.tableIds.tableDivId;
     tableDiv.classList.add(subDivClass);
 
-    document.getElementById(config.tableIds.wrapperDivId).appendChild(entryBoxDiv);
-    document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv);
+    document.getElementById(config.wrapperDivId).appendChild(entryBoxDiv);
+    document.getElementById(config.wrapperDivId).appendChild(tableDiv);
 }
 
 /**
@@ -137,7 +148,7 @@ function createTable(config) {
     table.appendChild(tbody);
     let tableDiv = document.getElementById(config.tableIds.tableDivId);
     tableDiv.appendChild(table);
-    document.getElementById(config.tableIds.wrapperDivId).appendChild(tableDiv)
+    document.getElementById(config.wrapperDivId).appendChild(tableDiv)
 
     createColumnHeader(config);
     addMultipleRows(config, config.numRows, 0);
@@ -149,23 +160,12 @@ function createColumnHeader(config) {
     // Then for each column
     for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
         // Create an entry cell
-        if (colIndex === 0) {
-            let cell = row.insertCell(colIndex);
-            cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
-            cell.classList.add("data-table-cell");
+        let cell = row.insertCell(colIndex);
+        cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
+        cell.classList.add("data-table-cell");
 
-            let middle = document.createTextNode(config.rowsName);
-
-            cell.appendChild(middle);
-        } else {
-            let cell = row.insertCell(colIndex);
-            cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
-            cell.classList.add("data-table-cell");
-
-            let middle = document.createTextNode(config.columnsName + " " + colIndex);
-
-            cell.appendChild(middle);
-        }
+        let cellText = colIndex === 0 ? config.rowsNamePlural : config.columnsName + " " + colIndex;
+        cell.appendChild(document.createTextNode(cellText));
     }
 }
 
@@ -215,11 +215,11 @@ function addSingleColumn(config){
  * @param {Number} numberOfColumns - The number of columns to be deleted
  * @returns {undefined}         - Doesn't return anything
  */
-/** function deleteColumns(config, numberOfColumns) {
+function deleteColumns(config, numberOfColumns) {
     for(let i = 0; i < numberOfColumns; i++){
         deleteSingleColumn(config);
     }
-} */
+}
 
 /**
  * Deletes a single Column from an existing table (delete from the bottom of the table)
@@ -314,7 +314,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         label.classList.add('cell-label');
 
         if (type === Number || type === String) {
-
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
@@ -335,8 +334,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             input.classList.add('cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             label.appendChild(input);
-        } else {
-            // At this point assume we have an array
+        } else if (type === Array) {
             let select = document.createElement("select");
             select.classList.add('cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
@@ -345,6 +343,12 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 select.appendChild(option);
             }
             label.appendChild(select);
+        } else {
+            /**
+             * FIXME: This error handling could be improved. Maybe a try-catch block?
+             */
+            let errorText = "Cell field datatype not supported.";
+            throw errorText;
         }
         cell.appendChild(label);
     }
@@ -422,15 +426,12 @@ function createColumnEntryBox(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
-    input.id = config.wrapperDivId + "column_input";
-    /**
-     * FIXME: Brute force pluralization below, need a better way to do this
-     */
-    input.placeholder = "Number of " + config.columnsName + "s";
+    input.id = config.entryIds.colInputId;
+    input.placeholder = "Number of " + config.columnsNamePlural.toLowerCase();
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addColumnBtn
@@ -449,7 +450,7 @@ function createColumnInputAndBtn(config) {
      */
     let addColumnBtn = document.createElement("button");
     addColumnBtn.classList.add("add-row-button");
-    addColumnBtn.innerHTML = "+ Add column to right";
+    addColumnBtn.innerHTML = "+ Add " + config.columnsName.toLowerCase() + " to right";
     addColumnBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
@@ -470,10 +471,10 @@ function createColumnInputAndBtn(config) {
  */
 function createColumnDeleteBtn(config) {
     let deleteColumnBtn = document.createElement("button");
-    deleteColumnBtn.innerHTML = "Delete column from right";
+    deleteColumnBtn.innerHTML = "Delete " + config.columnsName.toLowerCase() + " from right";
     deleteColumnBtn.classList.add("add-row-button");
     deleteColumnBtn.onclick = function () {
-        let input = document.getElementById(config.wrapperDivId + "column_input")
+        let input = document.getElementById(config.entryIds.colInputId);
         let value = input.value.trim();
         if (value !== '') {
             deleteColumns(config, parseInt(value, 10));
@@ -482,7 +483,7 @@ function createColumnDeleteBtn(config) {
         }
         input.value = '';
     }
-    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteColumnBtn);
+    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteColumnBtn);
 }
 
 /**
@@ -507,7 +508,7 @@ function createRowEntryBox(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
+    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
 
     // Creates the field for text input
     /**
@@ -515,8 +516,8 @@ function createRowInputAndBtn(config) {
      */
     let input = document.createElement("INPUT");
     input.type = 'text';
-    input.id = config.wrapperDivId + "row_input";
-    input.placeholder = "Enter " + config.rowsName + " Name";
+    input.id = config.entryIds.rowInputId;
+    input.placeholder = "Enter " + config.rowsName.toLowerCase() + " name";
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
@@ -533,7 +534,7 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
-    addRowBtn.innerHTML = "+ Add a " + config.rowsName + " to the bottom";
+    addRowBtn.innerHTML = "+ Add a " + config.rowsName.toLowerCase() + " to the bottom";
     addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
         let value = input.value.trim();
@@ -555,12 +556,12 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
-    deleteRowBtn.innerHTML = "Delete a " + config.rowsName + " from the bottom";
+    deleteRowBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " from the bottom";
     deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
-    document.getElementById(config.tableIds.entryBoxDivId).appendChild(deleteRowBtn);
+    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowBtn);
 }
 
 /**
