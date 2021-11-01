@@ -228,8 +228,8 @@ function deleteColumns(config, numberOfColumns) {
  * @returns {undefined}     - Doesn't return anything
  */
 function deleteSingleColumn(config) {
-     let table = document.getElementById(config.tableIds.tableElementId);
-     let numRows = table.rows.length; // get length row right now
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // get length row right now
     for (let i = 0; i < numRows; i++){
         table.rows[i].deleteCell(-1);
     }
@@ -534,6 +534,7 @@ function createRowInputAndBtn(config) {
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
+    addRowBtn.type = "button";
     addRowBtn.innerHTML = "+ Add a " + config.rowsName.toLowerCase() + " to the bottom";
     addRowBtn.classList.add("add-row-button");
     addRowBtn.onclick = function () {
@@ -556,6 +557,7 @@ function createRowInputAndBtn(config) {
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
+    deleteRowBtn.type = "button";
     deleteRowBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " from the bottom";
     deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
@@ -573,6 +575,7 @@ function createResetButton(clientConfig) {
     let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
 
     let resetBtn = document.createElement("button");
+    resetBtn.type = "button";
     resetBtn.innerHTML = "Reset the table";
 
     // Clears the wrapper div, deletes the old config object, and calls dtCreateDataTable again
