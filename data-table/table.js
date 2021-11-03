@@ -54,7 +54,8 @@ class Config {
         this.entryIds = {
             entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
             colInputId: '_colInputId_' + clientConfig.wrapperDivId,
-            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId
+            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId,
+            nameInputId: '_nameInputId_' + clientConfig.wrapperDivId
         }
 
         /**
@@ -489,34 +490,11 @@ function createColumnDeleteBtn(config) {
 /**
  * Creates HTML elements by which the user can easily create rows with custom left-most cells.
  * @param {object} config   - Table configuration object
- * @param {number} numRows  -  Number of rows
  * @returns {undefined}     - Doesn't return anything
  */
-function createRowEntryBox(config, numRows) {
-    let entryBoxDiv = document.getElementById(config.tableIds.entryBoxDivId);
-
-    // Create a dropdown of all the rows.
-    // Call the add row method that creates all the given rows in the dropdown.
-    for(let i = 0; i < numRows; i++) {
-        addRow(config);
-    }
-
+function createRowEntryBox(config) {
     createRowInputAndBtn(config);
-
     createRowDeleteBtn(config);
-}
-
-/**
- * This function takes the id of the list container for the candidates names
- * It then adds to the list another space for another candidate at the bottom of the list
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
- */
-function addRow(config) {
-    let container = document.getElementById(config.tableIds.entryBoxDivId);
-    let child = document.createElement("DIV");
-    child.innerHTML = "Enter " + config.datumConfig.names + ":";
-    container.appendChild(child);
 }
 
 /**
@@ -539,7 +517,7 @@ function createRowInputAndBtn(config) {
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
-    input.addEventListener("keyup", function(event) {
+    input.addEventListener("keyup", function (event) {
         event.preventDefault();
         /**
          * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
@@ -558,6 +536,13 @@ function createRowInputAndBtn(config) {
     addRowBtn.onclick = function () {
         let value = input.value.trim();
         if (value !== '') {
+            // add to dropdown
+            let opt = document.createElement('option');
+            opt.value = value;
+            opt.innerHTML = value;
+            let select = document.getElementById(config.entryIds.nameInputId);
+            select.appendChild(opt);
+
             addSingleRow(config, config.numRows, value);
         } else {
             addSingleRow(config, config.numRows);
@@ -565,6 +550,44 @@ function createRowInputAndBtn(config) {
         input.value = '';
     }
     entryBoxDiv.appendChild(addRowBtn);
+
+    let inputName = document.createElement("SELECT");
+    inputName.id = config.entryIds.nameInputId;
+    inputName.placeholder = "Select " + config.rowsName.toLowerCase() + " name to delete";
+    inputName.classList.add('enter-row-name');
+
+
+    entryBoxDiv.appendChild(inputName);
+
+    let deleteRowByNameBtn = document.createElement("button");
+    deleteRowByNameBtn.type = "button";
+    deleteRowByNameBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " by name";
+    deleteRowByNameBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
+    deleteRowByNameBtn.onclick = function () {
+        let name = inputName.value.trim();
+        // find index of name in rows
+        const cells = document.querySelectorAll('td');
+        cells.forEach((cell) => {
+            if(cell.innerText === name){
+                deleteSingleRow(config, cell.closest('tr').rowIndex-1);
+            }
+        });
+
+        inputName.remove(inputName.selectedIndex)
+
+    }
+
+    // If the user hits enter while in the text box, click the addRowBtn
+    inputName.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        /**
+         * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
+         */
+        if (event.code === "Enter") {
+            deleteRowByNameBtn.click();
+        }
+    })
+    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowbyNameBtn);
 }
 
 /**
