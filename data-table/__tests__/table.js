@@ -1,4 +1,3 @@
-// test 4-5 function
 const table = require('../table.js');
 
 beforeEach(() => {
