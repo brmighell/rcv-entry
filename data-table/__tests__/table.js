@@ -4,59 +4,77 @@ beforeEach(() => {
     document.body.innerHTML = '<div id="div-id"></div>'
 });
 
-describe('test createDataTable', () => {
-      
-  test('test0', () => {
-    const config = {
-        'wrapperDivId': 'div-id',
+describe('basic tests to ensure createDataTable can function well', () => {
+    test('check the add colunm button', () => {
+        const config = {
+            'wrapperDivId': 'div-id',
+        };
+        table.createDataTable(config);
+        const contents = document.getElementById(config.wrapperDivId).textContent;
+        expect(contents.substr(0, 12)).toEqual("+ Add column");
+    });
+    test('check the default value of rows', () => {
+        const config = {
+            'wrapperDivId': 'div-id',
+        };
+        table.createDataTable(config);
+        const contents = document.getElementsByTagName('table')[0].rows.length;
+        expect(contents).toEqual(4);
+    });
+
+
+    test('check the default value of colunms', () => {
+        const config = {
+            'wrapperDivId': 'div-id',
+        };
+        table.createDataTable(config);
+        const contents = document.getElementsByTagName('table')[0].rows[0].cells.length;
+        expect(contents).toEqual(4);
+    });
+
+    test('properly test the first cell', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+        const contents = document.getElementsByClassName('data-table-cell')[0].textContent;
+        expect(contents).toEqual('Rows');
+    });
+    
+    test('properly test the first cell', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+        const contents = document.getElementsByClassName('data-table-cell')[1].textContent;
+        expect(contents).toEqual('Column 1');
+    });
+    
+    test('test that those IDs are actually present', () => {
+        const config = {
+            'wrapperDivId': 'div-id',
     };
-    table.createDataTable(config);
-    const contents = document.getElementById(config.wrapperDivId).textContent;
-    expect(contents.substr(0, 10)).toEqual("Add column");
-  });
-
-  test('test1', () => {
-      const config = {
-          'wrapperDivId': 'div-id',
-      };
-      table.createDataTable(config);
-      let resConfigDict = table.configDict;
-      let resConfig = resConfigDict[config.wrapperDivId];
-      expect(resConfig.numRows).toEqual(3);
-      expect(resConfig.numColumns).toEqual(4);
-      expect(resConfig.rowsName).toEqual("row");
-      expect(resConfig.columnsName).toEqual("column");
-  });
-
-  test('test2', () => {
-    const config = {
-        'wrapperDivId': 'div-id',
-    };
-    table.createDataTable(config);
-    let resConfigDict = table.configDict;
-    let resConfig = resConfigDict[config.wrapperDivId];
-    let resTableIds = resConfig.tableIds;
-    expect(resTableIds.wrapperDivId).toEqual(config.wrapperDivId);
-    expect(resTableIds.tableDivId).toEqual('_tableDivId_' + config.wrapperDivId);
-    expect(resTableIds.entryBoxDivId).toEqual('_entryBoxDivId_' + config.wrapperDivId);
-    expect(resTableIds.tableElementId).toEqual('_tableId_' + config.wrapperDivId);
-    expect(resTableIds.theadElementId).toEqual('_theadId_' + config.wrapperDivId);
-    expect(resTableIds.tbodyElementId).toEqual('_tbodyId_' + config.wrapperDivId);
-  });
-
+        table.createDataTable(config);
+        expect(document.getElementsByClassName("SubDiv")).not.toEqual(null);
+        expect(document.getElementsByClassName("data-table")).not.toEqual(null);
+    });
 });
 
-describe('test vaidate', () => {
-  test('test throw error', () => {
-    const config = {
-      'wrapperDivId': 'div-id',
-    };
-    try {
-      table.validateConfig(config);
-    } catch (err) {
-      expect(err).toEqual("The table must have at least one column and one row!");
-    }
-  });
+describe('wrapperDivId config', () => {
+    
+    test('Passing invalid div', () => {
+        expect(() => {
+            table.createDataTable({
+            'wrapperDivId': 'not-div-id',
+        });
+    }).toThrow();
+});
+
+    test('Missing parameter: div id', () => {
+        expect(() => {
+            table.createDataTable({
+                'numRows' : 3
+            });
+        }).toThrow();
+    });
 });
 
 function entryCell(row, col) {
