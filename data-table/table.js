@@ -16,8 +16,7 @@ class Config {
      * Global variable containing configuration information for the table
      * @param {object} clientConfig     - Configuration information passed in by the client
      * @property {string} wrapperDivId  - ID for the wrapper
-     * @property {number} numRows       - Number of rows in the table
-     * @property {number} numColumns    - Number of columns in the table
+     * @property {number} numRows       - Number of rows ns in the table
      * @property {string} rowsName      - Name of rows in the table
      * @property {string} columnsName   - Name of columns in the table
      * @property {object} tableIds      - Container for all the table's magic strings
@@ -176,8 +175,8 @@ function createColumnHeader(config) {
  * @param {Number} numberOfColumns - Number of columns to be added
  * @returns {undefined}         - Doesn't return anything
  */
- function addMultipleColumns(config, numberOfColumns) {
-    for(let i = 0; i < numberOfColumns; i++){
+function addMultipleColumns(config, numberOfColumns) {
+    for (let i = 0; i < numberOfColumns; i++) {
         addSingleColumn(config);
     }
 }
@@ -187,7 +186,7 @@ function createColumnHeader(config) {
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
-function addSingleColumn(config){
+function addSingleColumn(config) {
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
     let numCols = table.rows[0].cells.length;
@@ -200,7 +199,7 @@ function addSingleColumn(config){
 
     cell.appendChild(middle);
 
-    for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
+    for (let rowIndex = 1; rowIndex < numRows; rowIndex++) {
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
 
     }
@@ -217,7 +216,7 @@ function addSingleColumn(config){
  * @returns {undefined}         - Doesn't return anything
  */
 function deleteColumns(config, numberOfColumns) {
-    for(let i = 0; i < numberOfColumns; i++){
+    for (let i = 0; i < numberOfColumns; i++) {
         deleteSingleColumn(config);
     }
 }
@@ -231,7 +230,7 @@ function deleteColumns(config, numberOfColumns) {
 function deleteSingleColumn(config) {
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
-    for (let i = 0; i < numRows; i++){
+    for (let i = 0; i < numRows; i++) {
         table.rows[i].deleteCell(-1);
     }
     config.numColumns -= 1;
@@ -321,7 +320,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             input.classList.add('cell-input');
 
             if (config.datumConfig.callbacks[fieldNum] !== undefined) {
-                input.addEventListener("focusout", function() {
+                input.addEventListener("focusout", function () {
                     /**
                      * FIXME: this is a placeholder implementation of a callback - do we need it?
                      */
@@ -346,10 +345,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             label.appendChild(select);
         } else {
             /**
-             * FIXME: This error handling could be improved. Maybe a try-catch block?
-             */
+             * FIXME: This error handling could be improved. Maybe a try-catch block
             let errorText = "Cell field datatype not supported.";
             throw errorText;
+             */
         }
         cell.appendChild(label);
     }
@@ -367,7 +366,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
  * @returns {undefined}         - Doesn't return anything
  */
 /**
-function deleteRows(config, numberOfRows, rowIndex) {
+ function deleteRows(config, numberOfRows, rowIndex) {
     // Deletes from bottom up
     for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
         deleteSingleRow(config, rowIndex + rowNum);
@@ -377,7 +376,7 @@ function deleteRows(config, numberOfRows, rowIndex) {
 /**
  * Deletes a single row from an existing table
  *
- * FIXME: This works when deleting from the bottom of the table. It does not support deleting from the middle!
+ * FIXME: This works when deleting from the table. It does support deleting from the middle!
  *
  * @param {object} config   - Table configuration object
  * @param {Number} rowIndex - Index of the row to be deleted
@@ -387,6 +386,7 @@ function deleteSingleRow(config, rowIndex) {
     document.getElementById(config.tableIds.tbodyElementId).deleteRow(rowIndex);
     config.numRows -= 1;
 }
+
 
 /**
  * Creates a magic string for a cell
@@ -436,7 +436,7 @@ function createColumnInputAndBtn(config) {
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addColumnBtn
-    input.addEventListener("keyup", function(event) {
+    input.addEventListener("keyup", function (event) {
         event.preventDefault();
 
         if (event.code === "Enter") {
@@ -456,6 +456,7 @@ function createColumnInputAndBtn(config) {
         let value = input.value.trim();
         if (value !== '') {
             addMultipleColumns(config, parseInt(value, 10));
+            // add values to drop
         } else {
             addSingleColumn(config);
         }
@@ -494,6 +495,7 @@ function createColumnDeleteBtn(config) {
  */
 function createRowEntryBox(config) {
     createRowInputAndBtn(config);
+
     createRowDeleteBtn(config);
 }
 
@@ -540,7 +542,7 @@ function createRowInputAndBtn(config) {
             let opt = document.createElement('option');
             opt.value = value;
             opt.innerHTML = value;
-            let select = document.getElementById(config.entryIds.nameInputId);
+            select = document.getElementById(config.entryIds.nameInputId);
             select.appendChild(opt);
 
             addSingleRow(config, config.numRows, value);
@@ -561,7 +563,7 @@ function createRowInputAndBtn(config) {
 
     let deleteRowByNameBtn = document.createElement("button");
     deleteRowByNameBtn.type = "button";
-    deleteRowByNameBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " by name";
+    deleteRowByNameBtn.innerHTML = "Delete selected row";
     deleteRowByNameBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowByNameBtn.onclick = function () {
         let name = inputName.value.trim();
@@ -587,7 +589,7 @@ function createRowInputAndBtn(config) {
             deleteRowByNameBtn.click();
         }
     })
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowbyNameBtn);
+    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowByNameBtn);
 }
 
 /**
@@ -630,9 +632,9 @@ function createResetButton(clientConfig) {
 
 // eslint-disable-next-line no-unused-vars
 /** function toJSON() {
-     * Parses data held in HTML to JSON and sends it to client
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Parses data held in HTML to JSON and sends it to client
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 /**
@@ -659,46 +661,46 @@ function dtCreateDataTable(clientConfig) {
 
 // eslint-disable-next-line no-unused-vars
 /** function dtDisableField(row, col, fieldName) {
-     * Calls getFieldId() then disables a specific field in a specific cell
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getFieldId() then disables a specific field in a specific cell
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtEnableField(row, col, fieldName) {
-     * Calls getFieldId() then enables a specific field in a specific cell
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getFieldId() then enables a specific field in a specific cell
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtDisableCell(row, col) {
-     * Calls getCellId() then disables all fields of a specific cell
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getCellId() then disables all fields of a specific cell
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtEnableCell(row, col) {
-     * Calls getCellId() then enables all fields of a specific cell
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getCellId() then enables all fields of a specific cell
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtSetFieldValue(row, col, fieldName, value) {
-     * Calls getFieldId() then updates a specific field in a
-     * specific cell to a given value
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getFieldId() then updates a specific field in a
+ * specific cell to a given value
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 // eslint-disable-next-line no-unused-vars
 /** function dtGetFieldValue(row, col, fieldName, value) {
-     * Calls getFieldId() then retrieves a value from
-     * a specific field in a specific cell
-     * TODO: Fill this out
-     * TODO: Implement Serialization
+ * Calls getFieldId() then retrieves a value from
+ * a specific field in a specific cell
+ * TODO: Fill this out
+ * TODO: Implement Serialization
 } */
 
 
