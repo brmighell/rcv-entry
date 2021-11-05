@@ -16,7 +16,7 @@ class Config {
      * Global variable containing configuration information for the table
      * @param {object} clientConfig     - Configuration information passed in by the client
      * @property {string} wrapperDivId  - ID for the wrapper
-     * @property {number} numRows       - Number of rows ns in the table
+     * @property {number} numRows       - Number of rows in the table
      * @property {string} rowsName      - Name of rows in the table
      * @property {string} columnsName   - Name of columns in the table
      * @property {object} tableIds      - Container for all the table's magic strings
