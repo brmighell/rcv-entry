@@ -17,10 +17,12 @@ class Config {
      * @param {object} clientConfig     - Configuration information passed in by the client
      * @property {string} wrapperDivId  - ID for the wrapper
      * @property {number} numRows       - Number of rows in the table
+     * @property {number} numColumns    - Number of columns in the table
      * @property {string} rowsName      - Name of rows in the table
      * @property {string} columnsName   - Name of columns in the table
      * @property {object} tableIds      - Container for all the table's magic strings
      * @property {object} datumConfig   - Container for default values of a cell
+     * @property {Array}  rowNames      - Initial list of row names
      */
     constructor(clientConfig) {
         this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
@@ -29,6 +31,7 @@ class Config {
         this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns + 1;
         this.rowsName = clientConfig.rowsName === undefined ? "Row" : clientConfig.rowsName;
         this.columnsName = clientConfig.columnsName === undefined ? "Column" : clientConfig.columnsName;
+        this.rowNames = clientConfig.rowNames === undefined ? ["1", "2", "3"] : clientConfig.rowNames;
         /**
          * TODO: Need to add some sort of check to account for when this pluralization doesn't work
          */
@@ -64,7 +67,7 @@ class Config {
          * @property {object} callbacks - Tells what function to execute when a field is changed | Default: ["None"]
          */
         this.datumConfig = {
-            names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
+            names: clientConfig.names === undefined ? ["", ""] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
@@ -247,7 +250,7 @@ function addMultipleRows(config, numberOfRows, index) {
     // For each of the newly requested rows
     for (let newRow = 0; newRow < numberOfRows; newRow++) {
         // The third argument of addSingleRow is optional and can be safely omitted.
-        addSingleRow(config, index + newRow);
+        addSingleRow(config, index + newRow, config.rowNames[newRow]);
     }
 }
 
@@ -310,7 +313,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         let type = config.datumConfig.types[fieldNum];
 
         let label = document.createElement("LABEL");
-        label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
+        label.innerHTML = String(config.datumConfig.names[fieldNum]);
         label.classList.add('cell-label');
 
         if (type === Number || type === String) {
@@ -328,6 +331,13 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 })
             }
             label.appendChild(input);
+
+            // label on the right hand side
+            let rLabel = document.createElement("span");
+            rLabel.innerHTML = "  Value";
+            // rLabel.classList.add('cell-label');
+            label.appendChild(rLabel);
+
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
@@ -346,8 +356,8 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         } else {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block
-            let errorText = "Cell field datatype not supported.";
-            throw errorText;
+             let errorText = "Cell field datatype not supported.";
+             throw errorText;
              */
         }
         cell.appendChild(label);
@@ -463,6 +473,9 @@ function createColumnInputAndBtn(config) {
         input.value = '';
     }
     entryBoxDiv.appendChild(addColumnBtn);
+
+    // remove from view
+    addColumnBtn.remove();
 }
 
 /**
@@ -486,6 +499,10 @@ function createColumnDeleteBtn(config) {
         input.value = '';
     }
     document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteColumnBtn);
+
+    // remove from view
+    deleteColumnBtn.remove();
+
 }
 
 /**
@@ -508,6 +525,7 @@ function createRowEntryBox(config) {
 function createRowInputAndBtn(config) {
     let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
 
+
     // Creates the field for text input
     /**
      * TODO: Consider changing "input" to "textarea" to support multiline input
@@ -529,6 +547,11 @@ function createRowInputAndBtn(config) {
         }
     })
     entryBoxDiv.appendChild(input);
+
+
+    let entriesDiv = document.createElement("div");
+    entriesDiv.id = "custom-entries";
+    entryBoxDiv.appendChild(entriesDiv);
 
     // Creates the button that will take the user input and send it to addSingleRow() when clicked
     let addRowBtn = document.createElement("button");
@@ -553,6 +576,9 @@ function createRowInputAndBtn(config) {
     }
     entryBoxDiv.appendChild(addRowBtn);
 
+    // remove from view
+    addRowBtn.remove();
+
     let inputName = document.createElement("SELECT");
     inputName.id = config.entryIds.nameInputId;
     inputName.placeholder = "Select " + config.rowsName.toLowerCase() + " name to delete";
@@ -560,6 +586,9 @@ function createRowInputAndBtn(config) {
 
 
     entryBoxDiv.appendChild(inputName);
+
+    // remove from view
+    inputName.remove();
 
     let deleteRowByNameBtn = document.createElement("button");
     deleteRowByNameBtn.type = "button";
@@ -590,6 +619,9 @@ function createRowInputAndBtn(config) {
         }
     })
     document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowByNameBtn);
+
+    // remove from view
+    deleteRowByNameBtn.remove();
 }
 
 /**
@@ -607,6 +639,8 @@ function createRowDeleteBtn(config) {
         deleteSingleRow(config, config.numRows - 1);
     }
     document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowBtn);
+    // remove from view
+    deleteRowBtn.remove();
 }
 
 /**
@@ -629,6 +663,137 @@ function createResetButton(clientConfig) {
     }
     wrapperDiv.appendChild(resetBtn);
 }
+
+/**
+ * This function sets up the list of items already in the list
+ * @param {object} config - config
+ * @returns {undefined} - Doesn't return anything
+ */
+function createListItems(config){
+
+    let wrapperDiv = document.getElementById("custom-entries");
+
+    for (let i = 0; i < config.rowNames.length; i++){
+
+        addTableEntryItems(config.rowNames[i], 'delete_x.png', wrapperDiv, config);
+    }
+
+    addAddNextItem("Add a row", wrapperDiv, config);
+
+}
+
+function addTableEntryItems(name, icon, wrapperDiv, config){
+
+    let individualDiv = document.createElement("div");
+    individualDiv.id = name;
+
+    individualDiv.classList.add("card");
+
+    let cardContent = document.createElement("div");
+    cardContent.classList.add("containerX");
+
+    let text = document.createElement("p");
+    text.innerHTML = name;
+
+    cardContent.appendChild(text);
+
+    let deleteImg = document.createElement("img");
+    deleteImg.src = "delete_x.png";
+    deleteImg.classList.add("delete-item");
+
+    text.appendChild(deleteImg);
+    individualDiv.appendChild(cardContent);
+
+    deleteImg.addEventListener("click", () => {
+
+        deleteRowHere(name, config);
+
+    });
+
+
+    wrapperDiv.appendChild(individualDiv);
+
+}
+
+function addAddNextItem(name, wrapperDiv, config){
+
+    let individualDiv = document.createElement("div");
+    individualDiv.id = "add-participant-id";
+
+
+    let cardContent = document.createElement("div");
+    cardContent.classList.add("containerX");
+
+    let text = document.createElement("p");
+    text.innerHTML = name;
+
+    cardContent.appendChild(text);
+
+    let addImg = document.createElement("img");
+    addImg.src = "ic_add.png";
+    addImg.classList.add("add-item");
+
+    text.appendChild(addImg);
+    individualDiv.appendChild(cardContent);
+
+
+    addImg.addEventListener("click", () => {
+
+        let input = document.getElementById(config.entryIds.rowInputId);
+
+        addRowHere(config, input, wrapperDiv);
+
+    });
+
+    wrapperDiv.appendChild(individualDiv);
+
+}
+
+function refreshItemList(){
+    let addSection = document.getElementById("add-participant-id");
+    addSection.remove();
+}
+
+function deleteRowHere(inputName, config){
+
+    // find index of name in rows
+    const cells = document.querySelectorAll('td');
+    cells.forEach((cell) => {
+        if(cell.innerText === inputName){
+            deleteSingleRow(config, cell.closest('tr').rowIndex-1);
+        }
+    });
+
+    document.getElementById(inputName).remove();
+
+
+}
+
+function addRowHere(config, input, wrapperDiv){
+    let value = input.value.trim();
+    if (value !== '') {
+
+        refreshItemList();
+
+        addTableEntryItems(value, 'delete_x.png', wrapperDiv);
+
+        addAddNextItem("Add a row", wrapperDiv, config);
+
+        addSingleRow(config, config.numRows, value);
+    } else {
+
+        refreshItemList();
+
+        addTableEntryItems(String(config.numRows + 1), 'delete_x.png', wrapperDiv);
+
+        addAddNextItem("Add a row", wrapperDiv, config);
+
+        addSingleRow(config, config.numRows);
+    }
+    input.value = '';
+
+}
+
 
 // eslint-disable-next-line no-unused-vars
 /** function toJSON() {
@@ -655,7 +820,9 @@ function dtCreateDataTable(clientConfig) {
 
     createResetButton(clientConfig);
 
-    createEntryBox(configDict[clientConfig.wrapperDivId])
+    createEntryBox(configDict[clientConfig.wrapperDivId]);
+
+    createListItems(configDict[clientConfig.wrapperDivId], clientConfig);
 
 }
 
