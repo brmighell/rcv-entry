@@ -338,12 +338,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('cell-input');
 
-            if (config.datumConfig.callbacks[fieldNum] !== undefined) {
+            if (cellFieldHasCallback(config, fieldNum)) {
                 input.addEventListener("focusout", function() {
-                    /**
-                     * FIXME: this is a placeholder implementation of a callback - do we need it?
-                     */
-                    // config.datumConfig.callbacks[fieldNum];
+                    let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], undefined, [input.value.trim()]);
+                    handleCellFieldCallback(config, cell, input, callbackCode);
                 })
             }
             label.appendChild(input);
@@ -352,6 +350,13 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             input.type = 'checkbox';
             input.classList.add('cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
+
+            if (cellFieldHasCallback(config, fieldNum)) {
+                input.addEventListener("focusout", function() {
+                    let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], undefined, [input.checked]);
+                    handleCellFieldCallback(config, cell, input, callbackCode);
+                })
+            }
             label.appendChild(input);
         } else if (type === Array) {
             let select = document.createElement("select");
@@ -360,6 +365,13 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 let option = document.createElement("option");
                 option.innerHTML = config.datumConfig.values[fieldNum][i];
                 select.appendChild(option);
+            }
+
+            if (cellFieldHasCallback(config, fieldNum)) {
+                select.addEventListener("focusout", function() {
+                    let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], undefined, config.datumConfig.values[fieldNum][select.selectedIndex]);
+                    handleCellFieldCallback(config, cell, select, callbackCode);
+                })
             }
             label.appendChild(select);
         } else {
@@ -371,6 +383,25 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         }
         cell.appendChild(label);
     }
+}
+
+function cellFieldHasCallback(config, fieldNum) {
+    return config.datumConfig.callbacks[fieldNum] !== undefined && config.datumConfig.callbacks[fieldNum] !== "None";
+}
+
+function handleCellFieldCallback(config, cell, field, callbackCode) {
+    if (callbackCode === 'Invalid') {
+        cell.classList.replace('data-table-cell', 'invalid-cell');
+        let errorMessage = document.createTextNode("Incorrect entry.".fontcolor('darkred'));
+        field.appendChild(errorMessage);
+        /**
+         * TODO: Figure out how to switch this off
+         */
+    }
+
+    /**
+     * TODO: Add a switch statement here to handle other functions as dictated by the callback.
+     */
 }
 
 /**
