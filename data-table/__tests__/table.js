@@ -5,7 +5,6 @@ beforeEach(() => {
 });
 
 describe('basic tests to ensure createDataTable can function well', () => {
-    let config;
     beforeEach(() => {
         config = {
             'wrapperDivId': 'div-id',
@@ -49,10 +48,9 @@ describe('basic tests to ensure createDataTable can function well', () => {
 
 describe('basic tests to ensure the buttons can function well', () => {
     beforeEach(() => {
-        config = {
-            'wrapperDivId': 'div-id',
-        };
-        table.createDataTable(config);
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
     });
 
     test('check the add column button fuctionality', () => {
@@ -165,7 +163,7 @@ describe('API basic tests', () => {
     test('properly create checkbox field within each cell', () => {
         let dropdownList = cellFieldList('cell-dropdown');
         for (let i = 0; i < 9; i++) {
-            var res = dropdownList[i].options[0].text;
+            let res = dropdownList[i].options[0].text;
             expect(res).toBe("Active");
         }
     });
@@ -173,7 +171,7 @@ describe('API basic tests', () => {
     test('properly create checkbox field within each cell', () => {
         let dropdownList = cellFieldList('cell-dropdown');
         for (let i = 0; i < 9; i++) {
-            var res = dropdownList[i].options[1].text;
+            let res = dropdownList[i].options[1].text;
             expect(res).toBe("Inactive");
         }
     });
