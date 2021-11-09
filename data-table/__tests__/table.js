@@ -6,13 +6,16 @@ beforeEach(() => {
 
 describe('basic tests to ensure createDataTable can function well', () => {
     beforeEach(() => {
-        config = {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+    });
+
+    test('check the add column button', () => {
+        const config = {
             'wrapperDivId': 'div-id',
         };
         table.createDataTable(config);
-    });
-
-    test('check the add column button name', () => {
         const contents = document.getElementById(config.wrapperDivId).textContent;
         expect(contents.substr(0, 12)).toEqual("+ Add column");
     });
@@ -119,10 +122,9 @@ function cellFieldList(className) {
 
 describe('API basic tests', () => {
     beforeEach(() => {
-        config = {
-            'wrapperDivId': 'div-id',
-        };
-        table.createDataTable(config);
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
     });
 
     test('create table and entry boxes without crashing', () => {
