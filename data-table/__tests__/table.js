@@ -5,7 +5,7 @@ beforeEach(() => {
 });
 
 describe('basic tests to ensure createDataTable can function well', () => {
-    test('check the add colunm button', () => {
+    test('check the add column button', () => {
         const config = {
             'wrapperDivId': 'div-id',
         };
@@ -23,7 +23,7 @@ describe('basic tests to ensure createDataTable can function well', () => {
     });
 
 
-    test('check the default value of colunms', () => {
+    test('check the default value of columns', () => {
         const config = {
             'wrapperDivId': 'div-id',
         };
@@ -39,7 +39,7 @@ describe('basic tests to ensure createDataTable can function well', () => {
         const contents = document.getElementsByClassName('data-table-cell')[0].textContent;
         expect(contents).toEqual('Rows');
     });
-    
+
     test('properly test the first cell', () => {
         table.createDataTable({
             'wrapperDivId': 'div-id'
@@ -47,19 +47,25 @@ describe('basic tests to ensure createDataTable can function well', () => {
         const contents = document.getElementsByClassName('data-table-cell')[1].textContent;
         expect(contents).toEqual('Column 1');
     });
-    
-    test('test that those IDs are actually present', () => {
+
+    test('check that two subDivs are created', () => {
         const config = {
             'wrapperDivId': 'div-id',
     };
         table.createDataTable(config);
         expect(document.getElementsByClassName("SubDiv")).not.toEqual(null);
+    });
+
+    test('check that data-table element is created', () => {
+        const config = {
+            'wrapperDivId': 'div-id',
+    };
+        table.createDataTable(config);
         expect(document.getElementsByClassName("data-table")).not.toEqual(null);
     });
 });
 
 describe('wrapperDivId config', () => {
-    
     test('Passing invalid div', () => {
         expect(() => {
             table.createDataTable({
@@ -71,7 +77,7 @@ describe('wrapperDivId config', () => {
     test('Missing parameter: div id', () => {
         expect(() => {
             table.createDataTable({
-                'numRows' : 3
+                'numRows': 3
             });
         }).toThrow();
     });
