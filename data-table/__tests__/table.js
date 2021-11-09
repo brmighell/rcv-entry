@@ -48,7 +48,6 @@ describe('basic tests to ensure createDataTable can function well', () => {
 });
 
 describe('basic tests to ensure the buttons can function well', () => {
-    let config;
     beforeEach(() => {
         config = {
             'wrapperDivId': 'div-id',
@@ -57,37 +56,37 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the add column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
-        add_buttons[0].click();
+        addButton[0].click();
         contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(20);
     });
 
     test('check the delete column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
-        add_buttons[1].click();
+        addButton[1].click();
         contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(12);
     });
 
     test('check the add a row button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
-        add_buttons[2].click();
+        addButton[2].click();
         contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(20);
     });
 
     test('check the delete a row button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
-        add_buttons[3].click();
+        addButton[3].click();
         contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(12);
     });
@@ -121,7 +120,6 @@ function cellFieldList(className) {
 }
 
 describe('API basic tests', () => {
-    let config;
     beforeEach(() => {
         config = {
             'wrapperDivId': 'div-id',
