@@ -339,7 +339,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
-
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
@@ -405,6 +404,7 @@ function cellFieldHasCallback(config, fieldNum) {
  * @returns {undefined}                                 - Doesn't return anything
  */
 function createCallbackListener(config, cell, field, fieldNum) {
+
     field.addEventListener("focusout", function () {
         let fieldValue = null;
 
@@ -418,7 +418,8 @@ function createCallbackListener(config, cell, field, fieldNum) {
         } else {
             throw String('Field has no class');
         }
-        let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], undefined, fieldValue);
+
+        let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
         handleCallbackReturn(config, cell, fieldNum, callbackCode);
     })
 }
@@ -436,7 +437,6 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
     let errorStringId = cell.id + fieldNum + '_error';
-
     if (callbackCode === 'Invalid') {
         // Turns the cell red
         cell.classList.replace('data-table-cell', 'invalid-cell');

@@ -13,6 +13,25 @@ function cellFieldList(className) {
     return document.getElementsByClassName(className);
 }
 
+function createSingleCellTable(names, types, values, callbacks) {
+    table.createDataTable({
+        'wrapperDivId': 'div-id',
+        'numColumns': 1,
+        'numRows': 1,
+        names,
+        types,
+        values,
+        callbacks
+    });
+}
+
+function invalidIfNegative(value) {
+    if (value[0] < 0) {
+        return 'Invalid';
+    }
+    return 'Okay';
+}
+
 describe('API basic tests', () => {
     test('create table and entry boxes without crashing', () => {
         table.createDataTable({
@@ -108,10 +127,30 @@ describe('API basic tests', () => {
 });
 
 describe('Interaction tests', () => {
-    test('User can input to cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
+    test('Invalid input to text input field updates cell appropriately', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+        expect(document.getElementsByClassName('invalid-cell').length).toEqual(0);
+        expect(document.getElementsByClassName('data-table-cell').length).toEqual(4);
+
+        let input = document.getElementsByClassName('cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('invalid-cell').length).toEqual(1);
+        expect(document.getElementsByClassName('data-table-cell').length).toEqual(3);
+    });
+
+    test('Valid input to text input field updates cell appropriately', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+
+        let input = document.getElementsByClassName('cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('invalid-cell').length).toEqual(0);
+        expect(document.getElementsByClassName('data-table-cell').length).toEqual(4);
     });
 });
 
