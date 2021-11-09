@@ -4,8 +4,6 @@ beforeEach(() => {
     document.body.innerHTML = '<div id="div-id"></div>'
 });
 
-
-
 describe('basic tests to ensure createDataTable can function well', () => {
     let config;
     beforeEach(() => {
@@ -19,44 +17,6 @@ describe('basic tests to ensure createDataTable can function well', () => {
         const contents = document.getElementById(config.wrapperDivId).textContent;
         expect(contents.substr(0, 12)).toEqual("+ Add column");
     });
-
-
-    test('check the add column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
-        let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
-        add_buttons[0].click();
-        contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(20);
-    });
-
-    test('check the add column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
-        let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
-        add_buttons[1].click();
-        contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(12);
-    });
-
-    test('check the add column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
-        let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
-        add_buttons[2].click();
-        contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(20);
-    });
-
-    test('check the add column button fuctionality', () => {
-        let add_buttons = document.getElementsByClassName("add-row-button");
-        let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
-        add_buttons[3].click();
-        contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(12);
-    });
-
 
     test('check the default value of rows', () => {
         const contents = document.getElementsByTagName('table')[0].rows.length;
@@ -78,12 +38,58 @@ describe('basic tests to ensure createDataTable can function well', () => {
         expect(contents).toEqual('Column 1');
     });
 
-    test('check that two subDivs are created', () => {
+    test('check that subDivs are created', () => {
         expect(document.getElementsByClassName("SubDiv")).not.toEqual(null);
     });
 
     test('check that data-table element is created', () => {
         expect(document.getElementsByClassName("data-table")).not.toEqual(null);
+    });
+});
+
+describe('basic tests to ensure the buttons can function well', () => {
+    let config;
+    beforeEach(() => {
+        config = {
+            'wrapperDivId': 'div-id',
+        };
+        table.createDataTable(config);
+    });
+
+    test('check the add column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[0].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(20);
+    });
+
+    test('check the delete column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[1].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(12);
+    });
+
+    test('check the add a row button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[2].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(20);
+    });
+
+    test('check the delete a row button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[3].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(12);
     });
 });
 
@@ -177,15 +183,9 @@ describe('API basic tests', () => {
 
     test('properly create checkbox field within each cell', () => {
         let inputList = cellFieldList('cell-input');
-        console.log(inputList);
         expect(inputList[0].getAttribute("placeholder")).toEqual("0");
 
     });
-
-
-
-
-
 });
 
 describe('Interaction tests', () => {
