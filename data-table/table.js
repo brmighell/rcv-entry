@@ -99,12 +99,31 @@ function setConfig(clientConfig) {
  * Performs basic logic-checking on the config after defaults have been set
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
- * @throws Error            - If any required option is not provided
+ * @throws Error            - If any option is provided incorrectly
  */
 function validateConfig(config) {
 
     if (config.numColumns <= 0 || config.numRows <= 0) {
-        throw new Error("The table must have at least one column and one row!")
+        throw new Error("The table must have at least one column and one row!");
+    }
+
+    if (config.datumConfig.names.length <= 0) {
+        throw new Error("Each cell must have at least one entry field.");
+    }
+
+    if (config.datumConfig.types.length <= 0) {
+        throw new Error("Each entry field must have a type associated with it.")
+    }
+
+    /**
+     * FIXME: allowedTypes should be relocated somewhere else if we wind up keeping it
+     */
+    let allowedTypes = [Boolean, Number, Array];
+
+    for (const element of config.datumConfig.types) {
+        if (!allowedTypes.includes(element)) {
+            throw new Error("Each entry field must be one of the following types: Boolean, Number, or Array");
+        }
     }
 }
 
@@ -666,4 +685,5 @@ function dtCreateDataTable(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.validateConfig = validateConfig;
 }

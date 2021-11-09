@@ -178,13 +178,59 @@ describe('API basic tests', () => {
             var res = dropdownList[i].options[1].text;
             expect(res).toBe("Inactive");
         }
-
     });
 
     test('properly create checkbox field within each cell', () => {
         let inputList = cellFieldList('cell-input');
         expect(inputList[0].getAttribute("placeholder")).toEqual("0");
+    });
 
+    test('check that an error is thrown if config has no columns', () => {
+        expect(() => {
+            table.validateConfig({
+                'numColumns': 0
+            });
+        }).toThrow("The table must have at least one column and one row!");
+    });
+
+    test('check that an error is thrown if config has no rows', () => {
+        expect(() => {
+            table.validateConfig({
+                'numRows': 0
+            });
+        }).toThrow("The table must have at least one column and one row!");
+    });
+
+    test('check that an error is thrown if config has no fields for the cells', () => {
+        expect(() => {
+            table.validateConfig({
+                'datumConfig': {
+                    'names': []
+                }
+            });
+        }).toThrow("Each cell must have at least one entry field.");
+    });
+
+    test('check that an error is thrown if config has no types for the cell fields', () => {
+        expect(() => {
+            table.validateConfig({
+                'datumConfig': {
+                    'names': ["Placeholder"],
+                    'types': []
+                }
+            });
+        }).toThrow("Each entry field must have a type associated with it.");
+    });
+
+    test('check that an error is thrown if one of the field types is not supported', () => {
+        expect(() => {
+            table.validateConfig({
+                'datumConfig': {
+                    'names': ["Placeholder"],
+                    'types': [String]
+                }
+            });
+        }).toThrow("Each entry field must be one of the following types: Boolean, Number, or Array");
     });
 });
 
