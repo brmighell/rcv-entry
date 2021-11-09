@@ -4,63 +4,85 @@ beforeEach(() => {
     document.body.innerHTML = '<div id="div-id"></div>'
 });
 
+
+
 describe('basic tests to ensure createDataTable can function well', () => {
-    test('check the add column button', () => {
-        const config = {
+    let config;
+    beforeEach(() => {
+        config = {
             'wrapperDivId': 'div-id',
         };
         table.createDataTable(config);
+    });
+
+    test('check the add column button name', () => {
         const contents = document.getElementById(config.wrapperDivId).textContent;
         expect(contents.substr(0, 12)).toEqual("+ Add column");
     });
+
+
+    test('check the add column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[0].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(20);
+    });
+
+    test('check the add column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[1].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(12);
+    });
+
+    test('check the add column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[2].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(20);
+    });
+
+    test('check the add column button fuctionality', () => {
+        let add_buttons = document.getElementsByClassName("add-row-button");
+        let contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(16);
+        add_buttons[3].click();
+        contents = document.getElementsByClassName("data-table-cell");
+        expect(contents.length).toEqual(12);
+    });
+
+
     test('check the default value of rows', () => {
-        const config = {
-            'wrapperDivId': 'div-id',
-        };
-        table.createDataTable(config);
         const contents = document.getElementsByTagName('table')[0].rows.length;
         expect(contents).toEqual(4);
     });
 
-
     test('check the default value of columns', () => {
-        const config = {
-            'wrapperDivId': 'div-id',
-        };
-        table.createDataTable(config);
         const contents = document.getElementsByTagName('table')[0].rows[0].cells.length;
         expect(contents).toEqual(4);
     });
 
     test('properly test the first cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
         const contents = document.getElementsByClassName('data-table-cell')[0].textContent;
         expect(contents).toEqual('Rows');
     });
 
     test('properly test the first cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
         const contents = document.getElementsByClassName('data-table-cell')[1].textContent;
         expect(contents).toEqual('Column 1');
     });
 
     test('check that two subDivs are created', () => {
-        const config = {
-            'wrapperDivId': 'div-id',
-    };
-        table.createDataTable(config);
         expect(document.getElementsByClassName("SubDiv")).not.toEqual(null);
     });
 
     test('check that data-table element is created', () => {
-        const config = {
-            'wrapperDivId': 'div-id',
-    };
-        table.createDataTable(config);
         expect(document.getElementsByClassName("data-table")).not.toEqual(null);
     });
 });
@@ -93,6 +115,14 @@ function cellFieldList(className) {
 }
 
 describe('API basic tests', () => {
+    let config;
+    beforeEach(() => {
+        config = {
+            'wrapperDivId': 'div-id',
+        };
+        table.createDataTable(config);
+    });
+
     test('create table and entry boxes without crashing', () => {
         table.createDataTable({
             'wrapperDivId': 'div-id'
@@ -100,9 +130,6 @@ describe('API basic tests', () => {
     });
 
     test('properly create cells', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
         for(let row = 1; row < 4; row++) {
             for(let col = 1; col < 4; col++) {
                 expect(entryCell(row, col)).not.toBeUndefined();
@@ -111,17 +138,11 @@ describe('API basic tests', () => {
     });
 
     test('properly create default input field within each cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
         let inputList = cellFieldList('cell-input');
         expect(inputList.length).toEqual(9);
     });
 
     test('properly create default dropdown field within each cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
         let dropdownList = cellFieldList('cell-dropdown');
         expect(dropdownList.length).toEqual(9);
     });
@@ -136,6 +157,35 @@ describe('API basic tests', () => {
         let checkboxList = cellFieldList('cell-checkbox');
         expect(checkboxList.length).toEqual(9);
     });
+
+    test('properly create checkbox field within each cell', () => {
+        let dropdownList = cellFieldList('cell-dropdown');
+        for (let i = 0; i < 9; i++) {
+            var res = dropdownList[i].options[0].text;
+            expect(res).toBe("Active");
+        }
+    });
+
+    test('properly create checkbox field within each cell', () => {
+        let dropdownList = cellFieldList('cell-dropdown');
+        for (let i = 0; i < 9; i++) {
+            var res = dropdownList[i].options[1].text;
+            expect(res).toBe("Inactive");
+        }
+
+    });
+
+    test('properly create checkbox field within each cell', () => {
+        let inputList = cellFieldList('cell-input');
+        console.log(inputList);
+        expect(inputList[0].getAttribute("placeholder")).toEqual("0");
+
+    });
+
+
+
+
+
 });
 
 describe('Interaction tests', () => {
