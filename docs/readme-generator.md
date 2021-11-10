@@ -1,14 +1,9 @@
----
-layout: default
----
 
-{% capture deps %}{% include_relative docs/deps.html %}{% endcapture %}
 {{ deps }}
 
 # A lightweight, extendable, dependency-free javascript HTML table plugin
 
 The default configuration:
-{% capture ex0 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
 {{ ex0 }}
 
 ## Features & Benefits
@@ -29,11 +24,9 @@ Benefits:
 
 ## Examples
 ### #1: Default
-{% capture ex1 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
 {{ ex1 }}
 
 ### #2: Fruit Example
-{% capture ex2 %}{% include_relative docs/github-pages-example-2.html %}{% endcapture %}
 {{ ex2 }}
 
 ### Usage
