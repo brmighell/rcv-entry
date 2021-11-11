@@ -21,13 +21,13 @@ describe('basic tests to ensure createDataTable can function well', () => {
     });
 
     test('check the default value of rows', () => {
-        const contents = document.getElementsByTagName('table')[0].rows.length;
-        expect(contents).toEqual(4);
+        const numRows = document.getElementsByTagName('table')[0].rows.length;
+        expect(numRows).toEqual(4);
     });
 
     test('check the default value of columns', () => {
-        const contents = document.getElementsByTagName('table')[0].rows[0].cells.length;
-        expect(contents).toEqual(4);
+        const numCols = document.getElementsByTagName('table')[0].rows[0].cells.length;
+        expect(numCols).toEqual(4);
     });
 
     test('properly test the first cell', () => {
@@ -57,21 +57,25 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the add column button fuctionality', () => {
+        const numRows = 4;
+        const numCols = 4;
         const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[0].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(20);
+        expect(contents.length).toEqual(numRows * (numCols + 1));
     });
 
     test('check the delete column button fuctionality', () => {
+        const numRows = 4;
+        const numCols = 4;
         const addButton = document.getElementsByClassName("add-row-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[1].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(12);
+        expect(contents.length).toEqual(numRows * (numCols - 1));
     });
 
     test('check the add a row button fuctionality', () => {
@@ -170,11 +174,11 @@ describe('API basic tests', () => {
         }
     });
 
-    test('properly create checkbox field within each cell', () => {
+    test('properly test how many options for the dropdown filed', () => {
         let dropdownList = cellFieldList('cell-dropdown');
         for (let i = 0; i < 9; i++) {
-            let res = dropdownList[i].options[1].text;
-            expect(res).toBe("Inactive");
+            let res = dropdownList[i].options.length;
+            expect(res).toBe(2);
         }
     });
 
