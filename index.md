@@ -47,7 +47,7 @@ Include the files in your HTML and create a wrapper div:
 <div id="table"></div>
 ```
 
-Create a slider by calling:
+Create a table by calling:
 ```javascript
 const config = {wrapperDivId: 'div'}
 dtCreateDataTable(config);
@@ -65,14 +65,7 @@ The `config` dictionary has the following options:
 | `numColumns` <br/><br/> default: `4` | Number of columns in the table. |
 | `rowsName` <br/><br/> default: `Row` | Name of rows in the table. |
 | `columnsName` <br/><br/> default: `Column` | Name of columns in the table. |
-| `tableIds` <br/><br/> default: `Container` | Container for all the table's magic strings. |
-| `datumConfig` <br/><br/> default: `Container` | Container for default values of a cell. |
-| `tableDivId` <br/><br/> default: `'_tableDivId_'` | ID for the div containing the table. |
-| `entryBoxDivId` <br/><br/> default: `'_entryBoxDivId_'` | ID for the div containing the entry box. |
-| `tableElementId` <br/><br/> default: `'_tableId_'` | Id for the entire table element. |
-| `theadElementId ` <br/><br/> default: `'_theadId_'` | ID for the table's first row (column headers) element. |
-| `tbodyElementId` <br/><br/> default: `'_tbodyId_'` | ID for the table's body element. |
-| `names` <br/><br/> default: `"Value"` | Array of the names for all fields in a cell. |
-| `types` <br/><br/> default: `Number` | Array of the types for all fields in a cell. |
-| `defaults` <br/><br/> default: `0` | Array of the defaults for all fields in a cell. |
+| `names` <br/><br/> default: `["Value", "Status"] ` | Array of the names for all fields in a cell. |
+| `types` <br/><br/> default: `[Number, Array]` | Array of the types for all fields in a cell. |
+| `values` <br/><br/> default: `[0, ["Active", "Inactive"]]` | Array of the types for all fields in a cell. |
 | `callbacks` <br/><br/> default: `"None"` | Tells what function to execute when a field is changed. |
