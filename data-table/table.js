@@ -67,7 +67,7 @@ class Config {
          * @property {object} callbacks - Tells what function to execute when a field is changed | Default: ["None"]
          */
         this.datumConfig = {
-            names: clientConfig.names === undefined ? ["", ""] : clientConfig.names,
+            names: clientConfig.names === undefined ? ["Value: ", ""] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
@@ -157,6 +157,11 @@ function createTable(config) {
     addMultipleRows(config, config.numRows, 0);
 }
 
+/**
+ * Creates a header of the column
+ * @param {object} config - Table configuration object
+ * @returns {undefined}   - Doesn't return anything
+ */
 function createColumnHeader(config) {
     // Insert a row into the body of the table
     let row = document.getElementById(config.tableIds.theadElementId).insertRow(0);
@@ -179,8 +184,33 @@ function createColumnHeader(config) {
  * @returns {undefined}         - Doesn't return anything
  */
 function addMultipleColumns(config, numberOfColumns) {
+    removeExistingColumns(config);
+    config.numColumns = 1;
     for (let i = 0; i < numberOfColumns; i++) {
         addSingleColumn(config);
+    }
+}
+
+/**
+ * Removes all existing columns, instead of the first one
+ * @param {object} config - A set of overriding config values, edits in-place
+ * @returns {undefined}         - Doesn't return anything
+ */
+function removeExistingColumns(config){
+    let table = document.getElementById(config.tableIds.tableElementId);
+    let numRows = table.rows.length; // get length row right now
+    let numCols = table.rows[0].cells.length;
+    for(let i=1; i<numCols; i++){
+        let headCellId = "_theadId_wrapper-0row_0_and_col_"+i;
+        let cell = document.getElementById(headCellId);
+        cell.remove();
+    }
+    for(let i=0; i<numRows-1; i++){
+        for(let j=1; j<numCols; j++){
+            let cellId = "wrapper-0row_"+i+"_and_col_"+j;
+            let cell = document.getElementById(cellId);
+            cell.remove();
+        }
     }
 }
 
@@ -203,7 +233,7 @@ function addSingleColumn(config) {
     cell.appendChild(middle);
 
     for (let rowIndex = 1; rowIndex < numRows; rowIndex++) {
-        createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
+        createEntryCell(config, table.rows[rowIndex], rowIndex-1, numCols);
 
     }
     config.numColumns += 1;
@@ -231,11 +261,14 @@ function deleteColumns(config, numberOfColumns) {
  * @returns {undefined}     - Doesn't return anything
  */
 function deleteSingleColumn(config) {
+    // Get the table
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = table.rows.length; // get length row right now
+    // Iterate rows and delete cell
     for (let i = 0; i < numRows; i++) {
         table.rows[i].deleteCell(-1);
     }
+    // Update config with new number of columns
     config.numColumns -= 1;
 }
 
@@ -265,6 +298,7 @@ function addMultipleRows(config, numberOfRows, index) {
 function addSingleRow(config, rowIndex, content) {
     // Insert a row into the body of the table
     let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex);
+    row.id = "table-row-"+rowIndex;
     // Then for each column
     for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
         // Create an entry cell
@@ -280,6 +314,15 @@ function addSingleRow(config, rowIndex, content) {
     }
 }
 
+/**
+ * Creates row header
+ * @param {object} config - A set of overriding config values, edits in-place
+ * @param {object} row - An object that represents datatable row
+ * @param {Number} rowIndex - A number that represents index of the row inside the table
+ * @param {Number} colIndex - A number that represents index of the column inside the table
+ * @param {String} content - A string that represents content for cell
+ * @returns {undefined}         - Doesn't return anything
+ */
 // eslint-disable-next-line max-params
 function createRowHeader(config, row, rowIndex, colIndex, content) {
 
@@ -287,12 +330,26 @@ function createRowHeader(config, row, rowIndex, colIndex, content) {
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
 
-    if (content === undefined) {
-        cell.innerHTML = (rowIndex + 1);
-    } else {
+    if (content) {
+        if(isNumber(content))
+            content = '';
         cell.innerHTML = content;
     }
 }
+
+/**
+ * Changes first cell value of table row
+ * @param {String} value   -  Value that is being set inside cell
+ * @param {Number} index   -  Index of table row that is being updated
+ * @returns {undefined} - Doesn't return anything
+ */
+function changeCellValue(value, index){
+    let id = "wrapper-0row_"+index+"_and_col_0";
+    let cell = document.getElementById(id);
+    // set the value inside cell
+    cell.innerHTML = value;
+}
+
 
 /**
  * Adds a cell to a specific index on a passed-in row
@@ -315,13 +372,11 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         let label = document.createElement("LABEL");
         label.innerHTML = String(config.datumConfig.names[fieldNum]);
         label.classList.add('cell-label');
-
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('cell-input');
-
             if (config.datumConfig.callbacks[fieldNum] !== undefined) {
                 input.addEventListener("focusout", function () {
                     /**
@@ -331,12 +386,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 })
             }
             label.appendChild(input);
-
-            // label on the right hand side
-            let rLabel = document.createElement("span");
-            rLabel.innerHTML = "  Value";
-            // rLabel.classList.add('cell-label');
-            label.appendChild(rLabel);
 
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
@@ -354,34 +403,12 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             }
             label.appendChild(select);
         } else {
-            /**
-             * FIXME: This error handling could be improved. Maybe a try-catch block
-             let errorText = "Cell field datatype not supported.";
+             errorText = "Cell field datatype not supported.";
              throw errorText;
-             */
         }
         cell.appendChild(label);
     }
 }
-
-/**
- * Deletes multiple rows from an existing table
- *
- * FIXME: This will work when deleting from the bottom of the table but might not from the middle!
- * TODO: Implement Serialization
- *
- * @param {object} config       - Table configuration object
- * @param {Number} numberOfRows - The number of rows to be deleted
- * @param {Number} rowIndex     - The index of the top-most row to be deleted
- * @returns {undefined}         - Doesn't return anything
- */
-/**
- function deleteRows(config, numberOfRows, rowIndex) {
-    // Deletes from bottom up
-    for (let rowNum = numberOfRows; rowNum >= 0; rowNum--) {
-        deleteSingleRow(config, rowIndex + rowNum);
-    }
-}*/
 
 /**
  * Deletes a single row from an existing table
@@ -394,7 +421,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
  */
 function deleteSingleRow(config, rowIndex) {
     document.getElementById(config.tableIds.tbodyElementId).deleteRow(rowIndex);
-    config.numRows -= 1;
 }
 
 
@@ -472,10 +498,6 @@ function createColumnInputAndBtn(config) {
         }
         input.value = '';
     }
-    entryBoxDiv.appendChild(addColumnBtn);
-
-    // remove from view
-    addColumnBtn.remove();
 }
 
 /**
@@ -498,11 +520,6 @@ function createColumnDeleteBtn(config) {
         }
         input.value = '';
     }
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteColumnBtn);
-
-    // remove from view
-    deleteColumnBtn.remove();
-
 }
 
 /**
@@ -525,7 +542,6 @@ function createRowEntryBox(config) {
 function createRowInputAndBtn(config) {
     let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
 
-
     // Creates the field for text input
     /**
      * TODO: Consider changing "input" to "textarea" to support multiline input
@@ -533,7 +549,7 @@ function createRowInputAndBtn(config) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.id = config.entryIds.rowInputId;
-    input.placeholder = "Enter " + config.rowsName.toLowerCase() + " name";
+    input.placeholder = config.rowNames.length;
     input.classList.add('enter-row-name');
 
     // If the user hits enter while in the text box, click the addRowBtn
@@ -543,7 +559,8 @@ function createRowInputAndBtn(config) {
          * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
          */
         if (event.code === "Enter") {
-            addRowBtn.click();
+            let wrapperDiv = document.getElementById("custom-entries");
+            addRowDrop(config, input, wrapperDiv);
         }
     })
     entryBoxDiv.appendChild(input);
@@ -574,26 +591,14 @@ function createRowInputAndBtn(config) {
         }
         input.value = '';
     }
-    entryBoxDiv.appendChild(addRowBtn);
-
-    // remove from view
-    addRowBtn.remove();
 
     let inputName = document.createElement("SELECT");
     inputName.id = config.entryIds.nameInputId;
-    inputName.placeholder = "Select " + config.rowsName.toLowerCase() + " name to delete";
-    inputName.classList.add('enter-row-name');
-
-
-    entryBoxDiv.appendChild(inputName);
-
-    // remove from view
-    inputName.remove();
 
     let deleteRowByNameBtn = document.createElement("button");
     deleteRowByNameBtn.type = "button";
     deleteRowByNameBtn.innerHTML = "Delete selected row";
-    deleteRowByNameBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
+    deleteRowByNameBtn.classList.add("add-row-button")
     deleteRowByNameBtn.onclick = function () {
         let name = inputName.value.trim();
         // find index of name in rows
@@ -618,29 +623,19 @@ function createRowInputAndBtn(config) {
             deleteRowByNameBtn.click();
         }
     })
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowByNameBtn);
-
-    // remove from view
-    deleteRowByNameBtn.remove();
 }
 
 /**
  * Creates a button that will call deleteSingleRow().
- * FIXME: This currently only deletes the table's bottom-most row.
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
     deleteRowBtn.type = "button";
-    deleteRowBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " from the bottom";
-    deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowBtn);
-    // remove from view
-    deleteRowBtn.remove();
 }
 
 /**
@@ -674,7 +669,6 @@ function createListItems(config){
     let wrapperDiv = document.getElementById("custom-entries");
 
     for (let i = 0; i < config.rowNames.length; i++){
-
         addTableEntryItems(config.rowNames[i], 'delete_x.png', wrapperDiv, config);
     }
 
@@ -682,115 +676,223 @@ function createListItems(config){
 
 }
 
-function addTableEntryItems(name, icon, wrapperDiv, config){
+
+/**
+ * Adds elements inside table cells
+ * @param {string} name - name of row
+ * @param {string} icon - icon to be displayed next to it
+ * @param {object} wrapperDiv - div
+ * @param {object} config - config
+ * @param {string} inputValue - the input
+ * @returns {undefined} - Doesn't return anything
+ */
+// eslint-disable-next-line max-params
+function addTableEntryItems(name, icon, wrapperDiv, config, inputValue){
 
     let individualDiv = document.createElement("div");
     individualDiv.id = name;
+    individualDiv.classList.add("menu");
 
-    individualDiv.classList.add("card");
+    let leftMenu = document.createElement("div");
+    leftMenu.classList.add("containerX");
 
-    let cardContent = document.createElement("div");
-    cardContent.classList.add("containerX");
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = "Enter row name...";
+    input.classList.add('entry-input');
+    if(inputValue)
+        input.value = inputValue;
+    let rowIndex = parseInt(name, 10) - 1;
+    input.onchange = function() {
+        changeCellValue(input.value, rowIndex);
+    };
+    input.onkeypress = function() {
+        changeCellValue(input.value, rowIndex);
+    };
+    input.onpaste = function() {
+        changeCellValue(input.value, rowIndex);
+    };
+    input.oninput = function() {
+        changeCellValue(input.value, rowIndex);
+    };
 
-    let text = document.createElement("p");
-    text.innerHTML = name;
-
-    cardContent.appendChild(text);
+    leftMenu.appendChild(input);
 
     let deleteImg = document.createElement("img");
     deleteImg.src = "delete_x.png";
     deleteImg.classList.add("delete-item");
+    deleteImg.style.width = "10%";
 
-    text.appendChild(deleteImg);
-    individualDiv.appendChild(cardContent);
+    leftMenu.appendChild(deleteImg);
+    individualDiv.appendChild(leftMenu);
 
     deleteImg.addEventListener("click", () => {
 
-        deleteRowHere(name, config);
+        deleteRowDrop(name, config);
 
     });
-
 
     wrapperDiv.appendChild(individualDiv);
 
 }
 
+
+/**
+ * Adds the next item
+ * @param {string} name - name of new item
+ * @param {object} wrapperDiv - div
+ * @param {object} config - config
+ * @return {undefined} - Doesn't return anything
+ */
 function addAddNextItem(name, wrapperDiv, config){
 
     let individualDiv = document.createElement("div");
     individualDiv.id = "add-participant-id";
 
 
-    let cardContent = document.createElement("div");
-    cardContent.classList.add("containerX");
+    let leftMenu = document.createElement("div");
+    leftMenu.classList.add("containerX");
 
     let text = document.createElement("p");
     text.innerHTML = name;
 
-    cardContent.appendChild(text);
+    leftMenu.appendChild(text);
 
     let addImg = document.createElement("img");
     addImg.src = "ic_add.png";
     addImg.classList.add("add-item");
 
     text.appendChild(addImg);
-    individualDiv.appendChild(cardContent);
+    individualDiv.appendChild(leftMenu);
 
 
     addImg.addEventListener("click", () => {
-
         let input = document.getElementById(config.entryIds.rowInputId);
-
-        addRowHere(config, input, wrapperDiv);
-
+        addRowDrop(config, input, wrapperDiv, true);
     });
-
     wrapperDiv.appendChild(individualDiv);
-
 }
 
+/**
+ * move the add a row button to the bottom
+ * @return {undefined} - Doesn't return nothing
+ */
 function refreshItemList(){
     let addSection = document.getElementById("add-participant-id");
     addSection.remove();
 }
 
-function deleteRowHere(inputName, config){
-
-    // find index of name in rows
-    const cells = document.querySelectorAll('td');
-    cells.forEach((cell) => {
-        if(cell.innerText === inputName){
-            deleteSingleRow(config, cell.closest('tr').rowIndex-1);
-        }
-    });
-
+/**
+ * Deletes table row
+ * @param {string} inputName - value of row
+ * @param {object} config - config
+ * @return {undefined} Doesn't return nothing
+ */
+function deleteRowDrop(inputName, config){
+    let nameInt = parseInt(inputName, 10);
+    let indexRow = nameInt - 1;
+    let id = "table-row-"+indexRow;
+    let rowElement = document.getElementById(id);
+    rowElement.remove();
     document.getElementById(inputName).remove();
-
-
+    document.getElementById("_rowInputId_wrapper-0").value = document.getElementsByClassName("menu").length;
+    for(let i=nameInt; i<config.numRows; i++){
+        let newIndex = i-1;
+        id = "table-row-"+i;
+        rowElement = document.getElementById(id);
+        rowElement.id = "table-row-"+newIndex;
+        for(let j=0; j<config.numColumns; j++){
+            id = "wrapper-0row_"+i+"_and_col_"+j;
+            let cell = document.getElementById(id);
+            id = "wrapper-0row_"+newIndex+"_and_col_"+j;
+            cell.id = id;
+        }
+    }
+    config.numRows -= 1;
 }
 
-function addRowHere(config, input, wrapperDiv){
+
+/**
+ * Adds row to the table
+ * @param {object} config config
+ * @param {string} input input value for candidate name
+ * @param {object} wrapperDiv div
+ * @param {object} addNewClickEvent - the new event
+ * @return {undefined} - Doesn't return nothing
+ */
+function addRowDrop(config, input, wrapperDiv, addNewClickEvent){
     let value = input.value.trim();
+
     if (value !== '') {
+        let menuInputs = document.getElementsByClassName("entry-input");
+        let menuInputsValues = []
+        for(let menuInput of menuInputs){
+            menuInputsValues.push(menuInput.value);
+        }
 
         refreshItemList();
 
-        addTableEntryItems(value, 'delete_x.png', wrapperDiv);
-
+        if(isNumber(value)){
+            if(addNewClickEvent){
+                value = parseInt(value, 10) + 1;
+            }
+            deleteAllRows(config, 0);
+            for (let i = 0; i < value; i++){
+                addTableEntryItems(String(config.numRows + 1), 'delete_x.png', wrapperDiv, config, menuInputsValues[i]);
+                addSingleRow(config, config.numRows, menuInputsValues[i]);
+            }
+        }else{
+            addTableEntryItems(value, 'delete_x.png', wrapperDiv, config);
+            addSingleRow(config, config.numRows, value);
+        }
         addAddNextItem("Add a row", wrapperDiv, config);
-
-        addSingleRow(config, config.numRows, value);
     } else {
-
         refreshItemList();
-
-        addTableEntryItems(String(config.numRows + 1), 'delete_x.png', wrapperDiv);
-
+        addTableEntryItems(String(config.numRows + 1), 'delete_x.png', wrapperDiv, config);
+        addSingleRow(config, config.numRows, String(config.numRows + 1));
         addAddNextItem("Add a row", wrapperDiv, config);
-
-        addSingleRow(config, config.numRows);
     }
-    input.value = '';
+
+    updateHint(config);
+}
+
+/**
+ * Check if passed value is a Number
+ * @param {string} value - value in the  input field
+ * @returns {boolean} - true if Number, false if not a Number object
+ */
+function isNumber(value){
+    // eslint-disable-next-line require-unicode-regexp
+    return (/\d/).test(value);
+}
+
+/**
+ * Update hint function
+ * @param {object} config - the config
+ * @returns {undefined} - Doesn't return anything
+ */
+function updateHint(config){
+
+    let input = document.getElementById(config.entryIds.rowInputId);
+    input.placeholder = config.numRows;
+}
+
+/**
+ * Delete all rows
+ * @param {object} config - the config
+ * @param {number} index - the index
+ * @returns {undefined} - Doesn't return anything
+ */
+function deleteAllRows(config, index) {
+
+    for (let i = 0; i < config.numRows; i++){
+        document.getElementById(config.tableIds.tbodyElementId).deleteRow(index);
+        config.numRows -= 1;
+        deleteAllRows(config, index);
+    }
+
+    document.getElementById("custom-entries").innerHTML = '';
+
 
 }
 
@@ -822,7 +924,8 @@ function dtCreateDataTable(clientConfig) {
 
     createEntryBox(configDict[clientConfig.wrapperDivId]);
 
-    createListItems(configDict[clientConfig.wrapperDivId], clientConfig);
+    createListItems(configDict[clientConfig.wrapperDivId]);
+
 
 }
 
