@@ -852,7 +852,7 @@ function addRowDrop(config, input, wrapperDiv, addNewClickEvent){
         addSingleRow(config, config.numRows, String(config.numRows + 1));
         addAddNextItem("Add a row", wrapperDiv, config);
     }
-
+    input.value = '';
     updateHint(config);
 }
 
