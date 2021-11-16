@@ -630,8 +630,6 @@ function dtCreateDataTable(clientConfig) {
 
     createTable(configDict[clientConfig.wrapperDivId]);
 
-    createResetButton(clientConfig);
-
     createEntryBox(configDict[clientConfig.wrapperDivId])
 
 }
