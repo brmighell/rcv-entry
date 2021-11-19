@@ -852,6 +852,7 @@ function addRowDrop(config, input, wrapperDiv, addNewClickEvent){
         addSingleRow(config, config.numRows, String(config.numRows + 1));
         addAddNextItem("Add a row", wrapperDiv, config);
     }
+    // noinspection JSPrimitiveTypeWrapperUsage
     input.value = '';
     updateHint(config);
 }
@@ -895,7 +896,6 @@ function deleteAllRows(config, index) {
 
 
 }
-
 
 // eslint-disable-next-line no-unused-vars
 /** function toJSON() {
