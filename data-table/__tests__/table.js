@@ -236,6 +236,14 @@ describe('API basic tests', () => {
     });
 });
 
+function getNumRows() {
+    return document.getElementsByTagName('table')[0].rows.length;
+}
+
+function getNumColumns() {
+    return document.getElementsByTagName('table')[0].rows[0].cells.length;
+}
+
 describe('Interaction tests', () => {
     test('User can input to cell', () => {
         table.createDataTable({

@@ -27,8 +27,8 @@
   "homepage": "https://artoonie.github.io/timeline-range-slider/",
   "devDependencies": {
     "eslint": "^7.18.0",
+    "eslint-plugin-jest": "^24.1.3",
     "jest": "^26.6.3",
-    "jest-extended": "^0.11.5",
-    "eslint-plugin-jest": "^24.1.3"
+    "jest-extended": "^1.1.0"
   }
 }
