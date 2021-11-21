@@ -67,7 +67,7 @@ class Config {
             names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
-            callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, "None"] : clientConfig.callbacks
+            callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, null] : clientConfig.callbacks
         }
     }
 }
@@ -362,6 +362,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             field = input;
         } else if (type === Array) {
             let select = document.createElement("select");
+            select.type = 'dropdown';
             select.classList.add('cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
                 let option = document.createElement("option");
@@ -392,7 +393,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
  * @returns {boolean}       - Returns True if field has a callback
  */
 function cellFieldHasCallback(config, fieldNum) {
-    return config.datumConfig.callbacks[fieldNum] !== undefined && config.datumConfig.callbacks[fieldNum] !== "None";
+    return config.datumConfig.callbacks[fieldNum] !== undefined && config.datumConfig.callbacks[fieldNum] !== null;
 }
 
 /**
@@ -409,11 +410,11 @@ function createCallbackListener(config, cell, field, fieldNum) {
         let fieldValue = null;
 
         // Gets value of the field, depending on what type of field it is
-        if (field.classList.contains('cell-input')) {
+        if (field.type.toString() == 'text') {
             fieldValue = [field.value.trim()]
-        } else if (field.classList.contains('cell-checkbox')) {
+        } else if (field.type.toString() == 'checkbox') {
             fieldValue = [field.checked]
-        } else if (field.classList.contains('cell-dropdown')) {
+        } else if (field.type.toString() == 'dropdown') {
             fieldValue = config.datumConfig.values[fieldNum][field.selectedIndex]
         } else {
             throw String('Field has no class');
@@ -437,8 +438,15 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
     let errorStringId = cell.id + fieldNum + '_error';
+
+    /**
+     * FIXME: How can we improve callback code strings?
+     */
     if (callbackCode === 'Invalid') {
         // Turns the cell red
+        /**
+         * FIXME: Instead of replacing this, have the invalid style be toggleable
+         */
         cell.classList.replace('data-table-cell', 'invalid-cell');
 
         // And then adds an error message to the bottom of the cell
