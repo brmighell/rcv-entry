@@ -18,6 +18,7 @@ describe('basic tests to ensure createDataTable can function well', () => {
         table.createDataTable(config);
         const contents = document.getElementById(config.wrapperDivId).textContent;
         expect(contents.substr(0, 9)).toEqual("Add a row");
+
     });
 
     test('check the default value of rows', () => {
@@ -107,6 +108,7 @@ describe('basic tests to ensure the buttons can function well', () => {
         // document.getElementById("_rowInputId_wrapper-0").click();
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(numRows * numCols);
+
     });
 });
 
@@ -304,8 +306,6 @@ describe('Interaction tests', () => {
 
         expect(numErrorsVisible()).toEqual(0);
     });
-});
-
 
 // describe('Input bar tests', () => {
 //     test ('test num of cols'), () => {

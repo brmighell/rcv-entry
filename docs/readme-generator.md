@@ -1,14 +1,9 @@
----
-layout: default
----
 
-{% capture deps %}{% include_relative docs/deps.html %}{% endcapture %}
 {{ deps }}
 
 # A lightweight, extendable, dependency-free javascript HTML table plugin
 
 The default configuration:
-{% capture ex0 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
 {{ ex0 }}
 
 ## Features & Benefits
@@ -29,11 +24,9 @@ Benefits:
 
 ## Examples
 ### #1: Default
-{% capture ex1 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
 {{ ex1 }}
 
 ### #2: Fruit Example
-{% capture ex2 %}{% include_relative docs/github-pages-example-2.html %}{% endcapture %}
 {{ ex2 }}
 
 ### Usage
@@ -47,7 +40,7 @@ Include the files in your HTML and create a wrapper div:
 <div id="table"></div>
 ```
 
-Create a table by calling:
+Create a slider by calling:
 ```javascript
 const config = {wrapperDivId: 'div'}
 dtCreateDataTable(config);
@@ -65,7 +58,14 @@ The `config` dictionary has the following options:
 | `numColumns` <br/><br/> default: `4` | Number of columns in the table. |
 | `rowsName` <br/><br/> default: `Row` | Name of rows in the table. |
 | `columnsName` <br/><br/> default: `Column` | Name of columns in the table. |
-| `names` <br/><br/> default: `["Value", "Status"] ` | Array of the names for all fields in a cell. |
-| `types` <br/><br/> default: `[Number, Array]` | Array of the types for all fields in a cell. |
-| `values` <br/><br/> default: `[0, ["Active", "Inactive"]]` | Array of the types for all fields in a cell. |
+| `tableIds` <br/><br/> default: `Container` | Container for all the table's magic strings. |
+| `datumConfig` <br/><br/> default: `Container` | Container for default values of a cell. |
+| `tableDivId` <br/><br/> default: `'_tableDivId_'` | ID for the div containing the table. |
+| `entryBoxDivId` <br/><br/> default: `'_entryBoxDivId_'` | ID for the div containing the entry box. |
+| `tableElementId` <br/><br/> default: `'_tableId_'` | Id for the entire table element. |
+| `theadElementId ` <br/><br/> default: `'_theadId_'` | ID for the table's first row (column headers) element. |
+| `tbodyElementId` <br/><br/> default: `'_tbodyId_'` | ID for the table's body element. |
+| `names` <br/><br/> default: `"Value"` | Array of the names for all fields in a cell. |
+| `types` <br/><br/> default: `Number` | Array of the types for all fields in a cell. |
+| `defaults` <br/><br/> default: `0` | Array of the defaults for all fields in a cell. |
 | `callbacks` <br/><br/> default: `"None"` | Tells what function to execute when a field is changed. |
