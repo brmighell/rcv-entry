@@ -706,14 +706,30 @@ function createResetButton(clientConfig) {
     }
     wrapperDiv.appendChild(resetBtn);
 }
+/**
+ * Parses data held in HTML to JSON and sends it to client
+ * @param {object} config - the config
+ * @returns {object} jsonObject - the JSON string object
+ * */
+function toJSON(config) {
+    let version = 1;
+    let rowNames = [];
+    let columnNames = [];
+    let data = [[]];
+    let table = document.getElementById(config.tableIds.tableElementId);
+    rowNames = table.rowsName;
+    columnNames = table.columnNames;
+    data = [[]];
 
-    /**
-// eslint-disable-next-line no-unused-vars
-/** function toJSON() {
-     * Parses data held in HTML to JSON and sends it to client
-     * TODO: Fill this out
-     * TODO: Implement Serialization
-} */
+    let jsonObject = {
+        version,
+        rowNames,
+        columnNames,
+        data
+    }
+
+    return JSON.stringify(jsonObject)
+}
 
 /**
  * Public functions below
