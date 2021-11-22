@@ -711,6 +711,7 @@ function createResetButton(clientConfig) {
  * @param {object} config - the config
  * @returns {object} jsonObject - the JSON string object
  * */
+// eslint-disable-next-line no-unused-vars
 function toJSON(config) {
     let version = 1;
     let rowNames = [];
