@@ -306,6 +306,7 @@ describe('Interaction tests', () => {
 
         expect(numErrorsVisible()).toEqual(0);
     });
+});
 
 // describe('Input bar tests', () => {
 //     test ('test num of cols'), () => {
