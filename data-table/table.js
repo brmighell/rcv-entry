@@ -109,6 +109,14 @@ function validateConfig(config) {
     if (config.numColumns <= 0 || config.numRows <= 0) {
         throw new Error("The table must have at least one column and one row!")
     }
+
+    if (config.datumConfig.names.length <= 0) {
+        throw new Error("Each cell must have at least one entry field.");
+    }
+
+    if (config.datumConfig.types.length <= 0) {
+        throw new Error("Each entry field must have a type associated with it.")
+    }
 }
 
 /**
@@ -852,6 +860,7 @@ function addRowDrop(config, input, wrapperDiv, addNewClickEvent){
         addSingleRow(config, config.numRows, String(config.numRows + 1));
         addAddNextItem("Add a row", wrapperDiv, config);
     }
+    // noinspection JSPrimitiveTypeWrapperUsage
     input.value = '';
     updateHint(config);
 }
@@ -895,7 +904,6 @@ function deleteAllRows(config, index) {
 
 
 }
-
 
 // eslint-disable-next-line no-unused-vars
 /** function toJSON() {
@@ -978,4 +986,5 @@ function dtCreateDataTable(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.validateConfig = validateConfig;
 }
