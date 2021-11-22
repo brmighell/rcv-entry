@@ -48,6 +48,19 @@
   border-style: solid;
 }
 
+.invalid-cell{
+    padding: 15px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: darkred;
+    background-color: #FFCCCB;
+}
+
+.error-message{
+    word-wrap: normal;
+    color: darkred;
+}
+
 .row-header-input{
     display: flex;
     flex-direction: row;

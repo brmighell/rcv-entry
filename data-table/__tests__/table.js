@@ -124,6 +124,29 @@ function cellFieldList(className) {
     return document.getElementsByClassName(className);
 }
 
+function numErrorsVisible() {
+    return document.getElementsByClassName('invalid-cell').length;
+}
+
+function createSingleCellTable(names, types, values, callbacks) {
+    table.createDataTable({
+        'wrapperDivId': 'div-id',
+        'numColumns': 1,
+        'numRows': 1,
+        names,
+        types,
+        values,
+        callbacks
+    });
+}
+
+function invalidIfNegative(value) {
+    if (value[0] < 0) {
+        return 'Invalid';
+    }
+    return 'Okay';
+}
+
 describe('API basic tests', () => {
     beforeEach(() => {
         table.createDataTable({
@@ -245,9 +268,26 @@ function getNumColumns() {
 }
 
 describe('Interaction tests', () => {
-    test('User can input to cell', () => {
-        table.createDataTable({
-            'wrapperDivId': 'div-id'
-        });
+    test('Invalid input to text input field updates cell appropriately', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+        expect(numErrorsVisible()).toEqual(0);
+
+        let input = document.getElementsByClassName('cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('invalid-cell').length).toEqual(1);
+    });
+
+    test('Valid input to text input field updates cell appropriately', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+
+        let input = document.getElementsByClassName('cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(numErrorsVisible()).toEqual(0);
     });
 });

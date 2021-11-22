@@ -67,9 +67,25 @@ class Config {
             names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
-            callbacks: clientConfig.callbacks === undefined ? ["None"] : clientConfig.callbacks
+            callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, null] : clientConfig.callbacks
         }
     }
+}
+
+/**
+ * FIXME: Remove this when done!
+ * Test functions for callback functionality
+ */
+/**
+ * "Callback" function to check if a value is negative
+ * @param {Number} value    - Value to be checked
+ * @returns {string}        - 'Invalid' if less than zero, 'Okay' otherwise
+ */
+function invalidIfNegative(value) {
+    if (value < 0) {
+        return 'Invalid';
+    }
+    return 'Okay';
 }
 
 /**
@@ -272,11 +288,11 @@ function addMultipleRows(config, numberOfRows, index) {
 
 /**
  * Adds a single row to the table
- * @param {object} config   - Table configuration object
- * @param {Number} rowIndex - Where to insert the row
- * @param {String} content  - Content to place in the left-most cell of a row (uses default if
- *                              no string is provided)
- * @returns {undefined}     - Doesn't return anything
+ * @param {object} config       - Table configuration object
+ * @param {Number} rowIndex     - Where to insert the row
+ * @param {String} [content]    - Content to place in the left-most cell of a row (uses default if
+ *                                  no string is provided)
+ * @returns {undefined}         - Doesn't return anything
  */
 function addSingleRow(config, rowIndex, content) {
     // Insert a row into the body of the table
@@ -323,7 +339,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
-
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
@@ -332,44 +347,130 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
         label.classList.add('cell-label');
 
+        let field = null;
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('cell-input');
-
-            if (config.datumConfig.callbacks[fieldNum] !== undefined) {
-                input.addEventListener("focusout", function() {
-                    /**
-                     * FIXME: this is a placeholder implementation of a callback - do we need it?
-                     */
-                    // config.datumConfig.callbacks[fieldNum];
-                })
-            }
-            label.appendChild(input);
+            field = input;
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
             input.classList.add('cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
-            label.appendChild(input);
+            field = input;
         } else if (type === Array) {
             let select = document.createElement("select");
+            select.type = 'dropdown';
             select.classList.add('cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
                 let option = document.createElement("option");
                 option.innerHTML = config.datumConfig.values[fieldNum][i];
                 select.appendChild(option);
             }
-            label.appendChild(select);
+            field = select;
         } else {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
              */
-            let errorText = "Cell field datatype not supported.";
-            throw errorText;
+            throw String("Cell field datatype not supported.");
         }
+
+        if (cellFieldHasCallback(config, fieldNum)) {
+            createCallbackListener(config, cell, field, fieldNum)
+        }
+
+        label.appendChild(field);
         cell.appendChild(label);
+    }
+}
+
+/**
+ * Checks if a given field has a callback associated with it
+ * @param {object} config   - Table configuration object
+ * @param {Number} fieldNum - Index of the field within the cell
+ * @returns {boolean}       - Returns True if field has a callback
+ */
+function cellFieldHasCallback(config, fieldNum) {
+    return config.datumConfig.callbacks[fieldNum] !== undefined && config.datumConfig.callbacks[fieldNum] !== null;
+}
+
+/**
+ * Creates a callback listener, distinguishing between the type of field to which the callback applies
+ * @param {object} config                               - Table configuration object
+ * @param {HTMLTableDataCellElement} cell               - Cell within the table
+ * @param {HTMLInputElement|HTMLSelectElement} field    - The field to which the callback applies
+ * @param {Number} fieldNum                             - Index of the field within the cell
+ * @returns {undefined}                                 - Doesn't return anything
+ */
+function createCallbackListener(config, cell, field, fieldNum) {
+
+    field.addEventListener("focusout", function () {
+        let fieldValue = null;
+
+        // Gets value of the field, depending on what type of field it is
+        if (field.type.toString() == 'text') {
+            fieldValue = [field.value.trim()]
+        } else if (field.type.toString() == 'checkbox') {
+            fieldValue = [field.checked]
+        } else if (field.type.toString() == 'dropdown') {
+            fieldValue = config.datumConfig.values[fieldNum][field.selectedIndex]
+        } else {
+            throw String('Field has no class');
+        }
+
+        let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
+        handleCallbackReturn(config, cell, fieldNum, callbackCode);
+    })
+}
+
+/**
+ * Translates the return value of a callback to function calls
+ * @param {object} config                   - Table configuration object
+ * @param {HTMLTableDataCellElement} cell   - Cell within the table
+ * @param {Number} fieldNum                 - Index of the field within the cell
+ * @param {String} callbackCode             - Client's response to the field's value
+ * @returns {undefined}                     - Doesn't return anything
+ */
+function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
+    /**
+     * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
+     */
+    let errorStringId = cell.id + fieldNum + '_error';
+
+    /**
+     * FIXME: How can we improve callback code strings?
+     */
+    if (callbackCode === 'Invalid') {
+        // Turns the cell red
+        /**
+         * FIXME: Instead of replacing this, have the invalid style be toggleable
+         */
+        cell.classList.replace('data-table-cell', 'invalid-cell');
+
+        // And then adds an error message to the bottom of the cell
+        let errorMessage = document.createElement("P");
+        errorMessage.innerHTML = ("Invalid " + config.datumConfig.names[fieldNum].toLowerCase());
+        errorMessage.classList.add('error-message');
+        errorMessage.id = errorStringId;
+        cell.appendChild(errorMessage);
+    } else {
+        // If the field entry is no longer invalid, change cell back to normal and remove error message
+        if (cell.classList.contains('invalid-cell')) {
+            cell.classList.replace('invalid-cell', 'data-table-cell');
+            cell.removeChild(document.getElementById(errorStringId));
+        }
+
+        /**
+         * TODO: Fill out this placeholder to handle other callback return codes
+         */
+        switch (callbackCode) {
+            case 'placeholder':
+                break;
+            default:
+                break;
+        }
     }
 }
 
