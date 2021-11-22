@@ -45,16 +45,16 @@ class Config {
          * @property {string} tbodyElementId    - ID for the table's body element
          */
         this.tableIds = {
-            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId,
-            tableElementId: '_tableId_' + clientConfig.wrapperDivId,
-            theadElementId: '_theadId_' + clientConfig.wrapperDivId,
-            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId
+            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId + '_',
+            tableElementId: '_tableId_' + clientConfig.wrapperDivId + '_',
+            theadElementId: '_theadId_' + clientConfig.wrapperDivId + '_',
+            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId + '_'
         }
 
         this.entryIds = {
-            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
-            colInputId: '_colInputId_' + clientConfig.wrapperDivId,
-            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId
+            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId + '_',
+            colInputId: '_colInputId_' + clientConfig.wrapperDivId + '_',
+            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId + '_'
         }
 
         /**
@@ -437,7 +437,7 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
     /**
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
-    let errorStringId = cell.id + fieldNum + '_error';
+    let errorStringId = cell.id + fieldNum + '_error_';
 
     /**
      * FIXME: How can we improve callback code strings?
@@ -515,7 +515,7 @@ function deleteSingleRow(config, rowIndex) {
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
-    return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex;
+    return '_' + wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + '_';
 }
 
 /**
