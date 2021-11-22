@@ -552,7 +552,7 @@ function createColumnInputAndBtn(config) {
     input.type = 'text';
     input.id = config.entryIds.colInputId;
     input.placeholder = "Number of " + config.columnsNamePlural.toLowerCase();
-    input.classList.add('enter-row-name');
+    input.classList.add('table-columnEntry-Field');
 
     // If the user hits enter while in the text box, click the addColumnBtn
     input.addEventListener("keyup", function(event) {
@@ -637,8 +637,8 @@ function createRowInputAndBtn(config) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.id = config.entryIds.rowInputId;
-    input.placeholder = "Enter " + config.rowsName.toLowerCase() + " name";
-    input.classList.add('enter-row-name');
+    input.placeholder = "Number of " + config.rowsNamePlural.toLowerCase();
+    input.classList.add('table-rowEntry-field');
 
     // If the user hits enter while in the text box, click the addRowBtn
     input.addEventListener("keyup", function(event) {
