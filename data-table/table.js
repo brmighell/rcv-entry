@@ -541,7 +541,7 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
         }
     }
 }
-
+/**
  * Deletes a single row from an existing table
  *
  * FIXME: This works when deleting from the table. It does support deleting from the middle!
