@@ -7,7 +7,7 @@ if [ ! -z "$(git status --porcelain)" ]; then
 fi
 
 # Once to ensure there's no changes
-python3 docs/generate-readme.py
+python3 docs/readme-generator.py
 
 if [ -z "$(git status --porcelain)" ]; then
   echo "README and github pages is up-to-date!"
