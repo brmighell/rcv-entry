@@ -20,6 +20,8 @@ class Config {
      * @property {number} numColumns    - Number of columns in the table
      * @property {string} rowsName      - Name of rows in the table
      * @property {string} columnsName   - Name of columns in the table
+     * @property {bool}   canEditRowHeader    - Are the row names editable?
+     * @property {bool}   canEditColumnHeader - Are the column names editable?
      * @property {object} tableIds      - Container for all the table's magic strings
      * @property {object} datumConfig   - Container for default values of a cell
      */
@@ -34,6 +36,8 @@ class Config {
         this.rowsNamePlural = this.rowsName + "s";
         this.columnsNamePlural = this.columnsName + "s";
         this.wrapperDivId = clientConfig.wrapperDivId;
+        this.canEditRowHeader = true;
+        this.canEditColumnHeader = false;
 
         /**
          * @property {string} tableDivId        - ID for the div containing the table
@@ -205,12 +209,42 @@ function createColumnHeader(config) {
         cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
         cell.classList.add("data-table-cell");
 
-        let cellText = colIndex === 0 ? config.rowsNamePlural : config.columnsName + " " + colIndex;
-        cell.appendChild(document.createTextNode(cellText));
+        cell.appendChild(createColumnHeaderCell(config, colIndex));
     }
 
     config.currNumColumns = config.defaultNumColumns + 1;
     config.currNumRows = 1;
+}
+
+function createColumnHeaderCell(config, colIndex) {
+    if (colIndex === 0) {
+        return document.createTextNode(config.rowsNamePlural);
+    }
+    if (!config.canEditColumnHeader) {
+        let cellText = config.columnsName + " " + colIndex;
+        return document.createTextNode(cellText);
+    }
+
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = config.columnsName;
+    input.classList.add('table-entry-field');
+    return input;
+}
+
+function createRowHeaderCell(config, rowIndex) {
+    if (!config.canEditRowHeader) {
+        let cellText = config.rowsName + " " + rowIndex;
+        return document.createTextNode(cellText);
+    }
+
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = config.rowsName;
+    input.classList.add('table-entry-field');
+    return input;
 }
 
 /**
@@ -220,7 +254,7 @@ function createColumnHeader(config) {
  *                                no string is provided)
  * @returns {undefined}       - Doesn't return anything
  */
-function addSingleColumn(config, content) {
+function addSingleColumn(config) {
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = config.currNumRows;
     let numCols = config.currNumColumns;
@@ -229,10 +263,7 @@ function addSingleColumn(config, content) {
     cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
     cell.classList.add("data-table-cell");
 
-    let text = content || config.columnsName + " " + numCols;
-    let middle = document.createTextNode(text);
-
-    cell.appendChild(middle);
+    cell.appendChild(createColumnHeaderCell(config, numCols));
 
     for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
@@ -264,15 +295,15 @@ function deleteSingleColumn(config) {
  *                                  no string is provided)
  * @returns {undefined}         - Doesn't return anything
  */
-function addSingleRow(config, content) {
+function addSingleRow(config) {
     // Insert a row into the body of the table
-    let rowIndex = config.currNumRows - 1;
-    let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex);
+    let rowIndex = config.currNumRows;
+    let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex - 1);
     // Then for each column
     for (let colIndex = 0; colIndex < config.currNumColumns; colIndex++) {
         // Create an entry cell
         if (colIndex === 0) {
-            createRowHeader(config, row, rowIndex, colIndex, content)
+            createRowHeader(config, row, rowIndex, colIndex)
         } else {
             createEntryCell(config, row, rowIndex, colIndex)
         }
@@ -282,17 +313,11 @@ function addSingleRow(config, content) {
 }
 
 // eslint-disable-next-line max-params
-function createRowHeader(config, row, rowIndex, colIndex, content) {
-
+function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
-
-    if (content === undefined) {
-        cell.innerHTML = (rowIndex + 1);
-    } else {
-        cell.innerHTML = content;
-    }
+    cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
 
 /**
@@ -514,18 +539,6 @@ function createColumnEntryBox(config) {
  */
 function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
-    // Creates the field for text input
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.id = leftPanelInfo.entryID;
-    input.placeholder = leftPanelInfo.name;
-    input.classList.add('table-entry-field');
-
-    // If the user hits enter while in the text box, click the addButton
-    input.addEventListener("onClick", function() {
-        addButton.click();
-    })
-    entryBoxDiv.appendChild(input);
 
     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
     let addButton = document.createElement("button");
@@ -533,9 +546,7 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     addButton.innerHTML = "+ Add " + leftPanelInfo.name.toLowerCase() +
                           " to " + leftPanelInfo.endDirection;
     addButton.onclick = function () {
-        let value = input.value.trim();
-        leftPanelInfo.addEntryFunction(config, value);
-        input.value = '';
+        leftPanelInfo.addEntryFunction(config);
     }
     entryBoxDiv.appendChild(addButton);
 }
