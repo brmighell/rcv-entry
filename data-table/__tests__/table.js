@@ -59,7 +59,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     test('check the add column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[0].click();
@@ -70,7 +70,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     test('check the delete column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[1].click();
@@ -79,7 +79,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the add a row button fuctionality', () => {
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
         addButton[2].click();
@@ -88,7 +88,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the delete a row button fuctionality', () => {
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(16);
         addButton[3].click();

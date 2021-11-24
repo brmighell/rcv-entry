@@ -540,47 +540,61 @@ function createColumnEntryBox(config) {
 }
 
 /**
+ * This function enables the user to enter the name of a row OR column,
+ * a helper for createColumnInputAndBtn and createRowInputAndBtn.
+ * @param {object} config        - Table configuration object
+ * @param {object} leftPanelInfo - Info needed for the left panel, requiring several
+ *                                 fields which are self-documenting: check the caller.
+ * @returns {undefined}          - Doesn't return anything
+ */
+function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
+    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.id = leftPanelInfo.entryID;
+    input.placeholder = "Number of " + leftPanelInfo.pluralNameLowerCase;
+    input.classList.add('table-entry-field');
+
+    // If the user hits enter while in the text box, click the addButton
+    input.addEventListener("change", function(event) {
+        addButton.click();
+    })
+    entryBoxDiv.appendChild(input);
+
+    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
+    let addButton = document.createElement("button");
+    addButton.classList.add("left-panel-button");
+    addButton.innerHTML = "+ Add " + leftPanelInfo.nameLowerCase + 
+                          " to " + leftPanelInfo.endDirection;
+    addButton.onclick = function () {
+        let value = input.value.trim();
+        if (value !== '') {
+            leftPanelInfo.addMultipleFunction(config, parseInt(value, 10));
+        } else {
+            leftPanelInfo.addSingleFunction(config);
+        }
+        input.value = '';
+    }
+    entryBoxDiv.appendChild(addButton);
+}
+
+/**
  * This function enables the user to enter the name of a column. Creates a field for text input
  * as well as a button that sends input text to addSingleColumn().
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
 function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
-    // Creates the field for text input
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.id = config.entryIds.colInputId;
-    input.placeholder = "Number of " + config.columnsNamePlural.toLowerCase();
-    input.classList.add('table-columnEntry-Field');
-
-    // If the user hits enter while in the text box, click the addColumnBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-
-        if (event.code === "Enter") {
-            addColumnBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
-    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-    /**
-     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
-     */
-    let addColumnBtn = document.createElement("button");
-    addColumnBtn.classList.add("add-row-button");
-    addColumnBtn.innerHTML = "+ Add " + config.columnsName.toLowerCase() + " to right";
-    addColumnBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addMultipleColumns(config, parseInt(value, 10));
-        } else {
-            addSingleColumn(config);
-        }
-        input.value = '';
-    }
-    entryBoxDiv.appendChild(addColumnBtn);
+    const leftPanelInfo = {
+        entryID: config.entryIds.colInputId,
+        nameLowerCase: config.columnsName.toLowerCase(),
+        pluralNameLowerCase: config.columnsNamePlural.toLowerCase(),
+        endDirection: 'right',
+        addSingleFunction: addSingleColumn,
+        addMultipleFunction: addMultipleColumns
+    };
+    createRowOrColumnInputAndBtn(config, leftPanelInfo);
 }
 
 /**
@@ -592,7 +606,7 @@ function createColumnInputAndBtn(config) {
 function createColumnDeleteBtn(config) {
     let deleteColumnBtn = document.createElement("button");
     deleteColumnBtn.innerHTML = "Delete " + config.columnsName.toLowerCase() + " from right";
-    deleteColumnBtn.classList.add("add-row-button");
+    deleteColumnBtn.classList.add("left-panel-button");
     deleteColumnBtn.onclick = function () {
         let input = document.getElementById(config.entryIds.colInputId);
         let value = input.value.trim();
@@ -628,45 +642,15 @@ function createRowEntryBox(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
-
-    // Creates the field for text input
-    /**
-     * TODO: Consider changing "input" to "textarea" to support multiline input
-     */
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.id = config.entryIds.rowInputId;
-    input.placeholder = "Number of " + config.rowsNamePlural.toLowerCase();
-    input.classList.add('table-rowEntry-field');
-
-    // If the user hits enter while in the text box, click the addRowBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-        /**
-         * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
-         */
-        if (event.code === "Enter") {
-            addRowBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
-    // Creates the button that will take the user input and send it to addSingleRow() when clicked
-    let addRowBtn = document.createElement("button");
-    addRowBtn.type = "button";
-    addRowBtn.innerHTML = "+ Add a " + config.rowsName.toLowerCase() + " to the bottom";
-    addRowBtn.classList.add("add-row-button");
-    addRowBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addSingleRow(config, config.numRows, value);
-        } else {
-            addSingleRow(config, config.numRows);
-        }
-        input.value = '';
-    }
-    entryBoxDiv.appendChild(addRowBtn);
+    const leftPanelInfo = {
+        entryID: config.entryIds.colInputId,
+        nameLowerCase: config.rowsName.toLowerCase(),
+        pluralNameLowerCase: config.rowsNamePlural.toLowerCase(),
+        endDirection: 'bottom',
+        addSingleFunction: addSingleRow,
+        addMultipleFunction: addMultipleRows
+    };
+    createRowOrColumnInputAndBtn(config, leftPanelInfo);
 }
 
 /**
@@ -679,7 +663,7 @@ function createRowDeleteBtn(config) {
     let deleteRowBtn = document.createElement("button");
     deleteRowBtn.type = "button";
     deleteRowBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " from the bottom";
-    deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
+    deleteRowBtn.classList.add("left-panel-button") // this is just a temp. The icon will be replaced.
     deleteRowBtn.onclick = function () {
         deleteSingleRow(config, config.numRows - 1);
     }
