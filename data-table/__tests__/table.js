@@ -101,6 +101,95 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 });
 
+describe('ensure row and columns can be independently set to editable', () => {
+    function childInColHeaderCell(col) {
+        const cell = document.getElementById(`_theadId_div-id__row_0_and_col_${col}_`);
+        if (cell == null) {
+            return null;
+        }
+        return cell.children[0];
+    }
+    function childInRowHeaderCell(row) {
+        const cell = document.getElementById(`div-id_row_${row}_and_col_0_`);
+        if (cell == null) {
+            return null;
+        }
+        return cell.children[0];
+    }
+    test('Ensure inputs exist on both row and col', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1).tagName).toEqual('INPUT');
+    });
+    test('Ensure inputs exist on only row', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': false
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1)).toEqual(undefined);
+    });
+    test('Ensure inputs exist on only col', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': false,
+            'canEditColumnHeader': true
+        });
+
+        expect(childInRowHeaderCell(1)).toEqual(undefined);
+        expect(childInColHeaderCell(1).tagName).toEqual('INPUT');
+    });
+    test('Ensure defaults are row only', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1)).toEqual(undefined);
+    });
+    test('Ensure add col also adds an input', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const addColButton = leftButtons[0];
+
+        // Doesn't exist before button click
+        expect(childInColHeaderCell(4)).toEqual(null);
+
+        // Does exist after
+        addColButton.click();
+        expect(childInColHeaderCell(4).tagName).toEqual('INPUT');
+    });
+    test('Ensure add row also adds an input', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const addColButton = leftButtons[2];
+
+        // Doesn't exist before button click
+        expect(childInRowHeaderCell(4)).toEqual(null);
+
+        // Does exist after
+        addColButton.click();
+        expect(childInRowHeaderCell(4).tagName).toEqual('INPUT');
+    });
+});
+
 describe('wrapperDivId config', () => {
     test('Passing invalid div', () => {
         expect(() => {

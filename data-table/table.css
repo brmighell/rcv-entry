@@ -32,11 +32,9 @@ body {
   margin: 1px 0;
 }
 .data-table{
-  position: absolute;
   width: 659px;
   height: 228px;
-  left: 421px;
-  top: 188px;
+  margin-top: 30px;
   background: #FFFFFF;
   border: 1px solid #000000;
   box-sizing: border-box;

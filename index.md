@@ -65,6 +65,8 @@ The `config` dictionary has the following options:
 | `numColumns` <br/><br/> default: `4` | Number of columns in the table. |
 | `rowsName` <br/><br/> default: `Row` | Name of rows in the table. |
 | `columnsName` <br/><br/> default: `Column` | Name of columns in the table. |
+| `canEditRowHeader` <br/><br/> default: `true` | Make the row headers an input field? |
+| `canEditColumnHeader` <br/><br/> default: `false` | Make the column headers an input field? |
 | `names` <br/><br/> default: `["Value", "Status"] ` | Array of the names for all fields in a cell. |
 | `types` <br/><br/> default: `[Number, Array]` | Array of the types for all fields in a cell. |
 | `values` <br/><br/> default: `[0, ["Active", "Inactive"]]` | Array of the types for all fields in a cell. |
