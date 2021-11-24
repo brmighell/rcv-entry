@@ -45,16 +45,16 @@ class Config {
          * @property {string} tbodyElementId    - ID for the table's body element
          */
         this.tableIds = {
-            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId,
-            tableElementId: '_tableId_' + clientConfig.wrapperDivId,
-            theadElementId: '_theadId_' + clientConfig.wrapperDivId,
-            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId
+            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId + '_',
+            tableElementId: '_tableId_' + clientConfig.wrapperDivId + '_',
+            theadElementId: '_theadId_' + clientConfig.wrapperDivId + '_',
+            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId + '_'
         }
 
         this.entryIds = {
-            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
-            colInputId: '_colInputId_' + clientConfig.wrapperDivId,
-            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId
+            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId + '_',
+            colInputId: '_colInputId_' + clientConfig.wrapperDivId + '_',
+            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId + '_'
         }
 
         /**
@@ -436,7 +436,7 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
     /**
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
-    let errorStringId = cell.id + fieldNum + '_error';
+    let errorStringId = cell.id + fieldNum + '_error_';
 
     /**
      * FIXME: How can we improve callback code strings?
@@ -551,7 +551,7 @@ function createColumnInputAndBtn(config) {
     input.type = 'text';
     input.id = config.entryIds.colInputId;
     input.placeholder = "Number of " + config.columnsNamePlural.toLowerCase();
-    input.classList.add('enter-row-name');
+    input.classList.add('table-columnEntry-Field');
 
     // If the user hits enter while in the text box, click the addColumnBtn
     input.addEventListener("keyup", function(event) {
@@ -636,8 +636,8 @@ function createRowInputAndBtn(config) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.id = config.entryIds.rowInputId;
-    input.placeholder = "Enter " + config.rowsName.toLowerCase() + " name";
-    input.classList.add('enter-row-name');
+    input.placeholder = "Number of " + config.rowsNamePlural.toLowerCase();
+    input.classList.add('table-rowEntry-field');
 
     // If the user hits enter while in the text box, click the addRowBtn
     input.addEventListener("keyup", function(event) {
