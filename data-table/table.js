@@ -514,7 +514,7 @@ function deleteSingleRow(config, rowIndex) {
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
-    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex;
+    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_";
 }
 
 /**
@@ -753,30 +753,35 @@ function getRowData(config, row) {
 function getCellData(config, row, col) {
     let cellData = {};
     let cell = getCellElement(config, row, col);
-    let index = 0;
 
     /*
     Assumes that each cell has only field labels as children
      */
-    cell.childNodes.forEach(function (label) {
+    cell.childNodes.forEach(function (label, index) {
         /*
         Assumes that each label has two children. The first is
         text containing the label's name and the second is the
         space the user can interact with.
          */
-        let value = "";
+        let value = null;
         switch (config.datumConfig.types[index]) {
             case Number:
-                value = parseInt(label.childNodes[1].value, 10) || config.datumConfig.values[index];
+                value = parseInt(label.childNodes[1].value, 10);
                 break;
             case Boolean:
                 value = label.childNodes[1].checked;
                 break;
-            default:
+            case String:
+            case Array:
                 value = label.childNodes[1].value;
+                break;
+            default:
+                throw String("Label " + label.innerHTML + " does not have a supported field.");
         }
+        /**
+         * FIXME: How do we want cell properties to be named? Do we care about lowercase?
+         */
         cellData[config.datumConfig.names[index].toLowerCase()] = value;
-        index += 1;
     })
     return cellData;
 }
@@ -803,7 +808,6 @@ function dtCreateDataTable(clientConfig) {
     createJSONButton(clientConfig);
 
     createEntryBox(configDict[clientConfig.wrapperDivId]);
-    // toJSON(configDict[clientConfig.wrapperDivId]);
 }
 
 /**
