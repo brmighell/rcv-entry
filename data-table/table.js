@@ -518,7 +518,7 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.id = leftPanelInfo.entryID;
-    input.placeholder = "Number of " + leftPanelInfo.pluralNameLowerCase;
+    input.placeholder = leftPanelInfo.name;
     input.classList.add('table-entry-field');
 
     // If the user hits enter while in the text box, click the addButton
@@ -530,7 +530,7 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
     let addButton = document.createElement("button");
     addButton.classList.add("left-panel-button");
-    addButton.innerHTML = "+ Add " + leftPanelInfo.nameLowerCase +
+    addButton.innerHTML = "+ Add " + leftPanelInfo.name.toLowerCase() +
                           " to " + leftPanelInfo.endDirection;
     addButton.onclick = function () {
         let value = input.value.trim();
@@ -549,8 +549,7 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
 function createColumnInputAndBtn(config) {
     const leftPanelInfo = {
         entryID: config.entryIds.colInputId,
-        nameLowerCase: config.columnsName.toLowerCase(),
-        pluralNameLowerCase: config.columnsNamePlural.toLowerCase(),
+        name: config.columnsName,
         endDirection: 'right',
         addEntryFunction: addSingleColumn
     };
@@ -566,7 +565,8 @@ function createColumnInputAndBtn(config) {
 function createColumnDeleteBtn(config) {
     createDeleteBtn(config, {
         nameLowerCase: config.columnsName.toLowerCase(),
-        deleteFunction: deleteSingleColumn
+        deleteFunction: deleteSingleColumn,
+        endDirection: 'right'
     });
 }
 
@@ -594,8 +594,7 @@ function createRowEntryBox(config) {
 function createRowInputAndBtn(config) {
     const leftPanelInfo = {
         entryID: config.entryIds.rowInputId,
-        nameLowerCase: config.rowsName.toLowerCase(),
-        pluralNameLowerCase: config.rowsNamePlural.toLowerCase(),
+        name: config.rowsName,
         endDirection: 'bottom',
         addEntryFunction: addSingleRow
     };
@@ -611,7 +610,8 @@ function createRowInputAndBtn(config) {
 function createDeleteBtn(config, buttonConfig) {
     let deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
-    deleteBtn.innerHTML = "Delete a " + buttonConfig.nameLowerCase + " from the bottom";
+    deleteBtn.innerHTML = "Delete a " + buttonConfig.nameLowerCase +
+                          " from the " + buttonConfig.endDirection;
     deleteBtn.classList.add("left-panel-button");
     deleteBtn.onclick = function () {
         buttonConfig.deleteFunction(config);
@@ -628,7 +628,8 @@ function createDeleteBtn(config, buttonConfig) {
 function createRowDeleteBtn(config) {
     createDeleteBtn(config, {
         nameLowerCase: config.rowsName.toLowerCase(),
-        deleteFunction: deleteSingleRow
+        deleteFunction: deleteSingleRow,
+        endDirection: 'bottom'
     });
 }
 
