@@ -36,8 +36,8 @@ class Config {
         this.rowsNamePlural = this.rowsName + "s";
         this.columnsNamePlural = this.columnsName + "s";
         this.wrapperDivId = clientConfig.wrapperDivId;
-        this.canEditRowHeader = true;
-        this.canEditColumnHeader = false;
+        this.canEditRowHeader = clientConfig.canEditRowHeader === undefined ? true : clientConfig.canEditRowHeader;
+        this.canEditColumnHeader = clientConfig.canEditColumnHeader === undefined ? false : clientConfig.canEditColumnHeader;
 
         /**
          * @property {string} tableDivId        - ID for the div containing the table
