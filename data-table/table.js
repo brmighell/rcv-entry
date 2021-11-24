@@ -335,7 +335,6 @@ function createRowHeader(config, row, rowIndex, colIndex, content) {
  * @returns {undefined}             - Doesn't return anything
  */
 function createEntryCell(config, row, rowIndex, colIndex) {
-
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
@@ -410,12 +409,12 @@ function createCallbackListener(config, cell, field, fieldNum) {
         let fieldValue = null;
 
         // Gets value of the field, depending on what type of field it is
-        if (field.type.toString() == 'text') {
+        if (field.type.toString() === 'text') {
             fieldValue = [field.value.trim()]
-        } else if (field.type.toString() == 'checkbox') {
+        } else if (field.type.toString() === 'checkbox') {
             fieldValue = [field.checked]
-        } else if (field.type.toString() == 'dropdown') {
-            fieldValue = config.datumConfig.values[fieldNum][field.selectedIndex]
+        } else if (field.type.toString() === 'dropdown') {
+            fieldValue = [field.value]
         } else {
             throw String('Field has no class');
         }
@@ -515,7 +514,7 @@ function deleteSingleRow(config, rowIndex) {
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
-    return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex;
+    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex;
 }
 
 /**
@@ -687,49 +686,99 @@ function createRowDeleteBtn(config) {
 }
 
 /**
- * This function clears out an old table and reinitialize it with the previously passed-in clientConfig
+ * This button causes a JSON object containing the table's
+ * contents to be printed to the console
  * @param {object} clientConfig - Client configuration requests
  * @returns {undefined}         - Doesn't return anything
  */
-function createResetButton(clientConfig) {
+function createJSONButton(clientConfig) {
     let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
 
-    let resetBtn = document.createElement("button");
-    resetBtn.type = "button";
-    resetBtn.innerHTML = "Reset the table";
+    let JSONBtn = document.createElement("button");
+    JSONBtn.type = "button";
+    JSONBtn.innerHTML = "Print JSON to console";
 
-    // Clears the wrapper div, deletes the old config object, and calls dtCreateDataTable again
-    resetBtn.onclick = function () {
-        wrapperDiv.innerHTML = '';
-        Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
-        dtCreateDataTable(clientConfig);
+    JSONBtn.onclick = function () {
+        // eslint-disable-next-line no-console
+        console.log(dtToJSON(clientConfig));
     }
-    wrapperDiv.appendChild(resetBtn);
+    wrapperDiv.appendChild(JSONBtn);
 }
+
 /**
- * Parses data held in HTML to JSON and sends it to client
- * @param {object} config - the config
- * @returns {object} jsonObject - the JSON string object
- * */
-// eslint-disable-next-line no-unused-vars
-function toJSON(config) {
-    let version = 1;
-    let rowNames = [];
-    let columnNames = [];
-    let data = [[]];
-    let table = document.getElementById(config.tableIds.tableElementId);
-    rowNames = table.rowsName;
-    columnNames = table.columnNames;
-    data = [[]];
+ * Returns the HTML element corresponding to a cell at a specific index
+ * @param {object} config           - Table configuration object
+ * @param {Number} row              - Row on which the cell is located
+ * @param {Number} column           - Column in which the cell is located
+ * @returns {HTMLTableCellElement}  - HTML element of a specific cell
+ */
+function getCellElement(config, row, column) {
+    return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
+}
 
-    let jsonObject = {
-        version,
-        rowNames,
-        columnNames,
-        data
+/**
+ * Gets a 2D array containing all data from all fields of all cells in the table
+ * @param {object} config   - Table configuration object
+ * @returns {*[]}           - 2D array of cell objects
+ */
+function getTableData(config) {
+    let tableData = [];
+    for (let row = 0; row < config.numRows; row++) {
+        tableData.push(getRowData(config, row));
     }
+    return tableData;
+}
 
-    return JSON.stringify(jsonObject)
+/**
+ * Gets a 1D array containing all data from all fields of all cells in a specific row of the table
+ * @param {object} config   - Table configuration object
+ * @param {Number} row      - Specific row to pull data from
+ * @returns {*[]}           - 1D array of cell objects
+ */
+function getRowData(config, row) {
+    let rowData = [];
+    for (let col = 1; col < config.numColumns; col++) {
+        rowData.push(getCellData(config, row, col));
+    }
+    return rowData
+}
+
+/**
+ * Gets an object containing all data from all fields of a specific cell
+ * @param {object} config   - Table configuration object
+ * @param {Number} row      - Row index for the cell
+ * @param {Number} col      - Column index for the cell
+ * @returns {object}        - Object containing cell data in the following format: {[fieldName]:[fieldValue],...}
+ */
+function getCellData(config, row, col) {
+    let cellData = {};
+    let cell = getCellElement(config, row, col);
+    let index = 0;
+
+    /*
+    Assumes that each cell has only field labels as children
+     */
+    cell.childNodes.forEach(function (label) {
+        /*
+        Assumes that each label has two children. The first is
+        text containing the label's name and the second is the
+        space the user can interact with.
+         */
+        let value = "";
+        switch (config.datumConfig.types[index]) {
+            case Number:
+                value = parseInt(label.childNodes[1].value, 10) || config.datumConfig.values[index];
+                break;
+            case Boolean:
+                value = label.childNodes[1].checked;
+                break;
+            default:
+                value = label.childNodes[1].value;
+        }
+        cellData[config.datumConfig.names[index].toLowerCase()] = value;
+        index += 1;
+    })
+    return cellData;
 }
 
 /**
@@ -748,10 +797,36 @@ function dtCreateDataTable(clientConfig) {
 
     createTable(configDict[clientConfig.wrapperDivId]);
 
-    createResetButton(clientConfig);
+    /**
+     * FIXME: Remove this function call and declaration when done testing
+     */
+    createJSONButton(clientConfig);
 
-    createEntryBox(configDict[clientConfig.wrapperDivId])
+    createEntryBox(configDict[clientConfig.wrapperDivId]);
+    // toJSON(configDict[clientConfig.wrapperDivId]);
+}
 
+/**
+ * Parses data held in HTML to JSON and sends it to client
+ * @param {object} clientConfig - the config
+ * @returns {object} jsonObject - the JSON string object
+ * */
+function dtToJSON(clientConfig) {
+    let config = configDict[clientConfig.wrapperDivId];
+    let rowNames = [];
+    for (let row = 0; row < config.numRows; row++) {
+        rowNames[row] = getCellElement(config, row, 0).innerHTML;
+    }
+    // Currently don't support custom column names
+    let columnNames = [];
+    let data = getTableData(config);
+    let jsonObject = {
+        "version": 1,
+        rowNames,
+        columnNames,
+        data
+    }
+    return JSON.stringify(jsonObject)
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -803,5 +878,6 @@ function dtCreateDataTable(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.toJSON = dtToJSON;
     exports.validateConfig = validateConfig;
 }
