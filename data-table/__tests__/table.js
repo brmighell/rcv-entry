@@ -79,21 +79,25 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the add a row button fuctionality', () => {
+        const numRows = 4;
+        const numCols = 4;
         const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[2].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(20);
+        expect(contents.length).toEqual((numRows+1) * numCols);
     });
 
     test('check the delete a row button fuctionality', () => {
+        const numRows = 4;
+        const numCols = 4;
         const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[3].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(12);
+        expect(contents.length).toEqual(numRows * (numCols-1));
     });
 });
 
@@ -212,7 +216,8 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no columns', () => {
         expect(() => {
-            table.validateConfig({
+            table.createDataTable({
+                'wrapperDivId': 'a',
                 'numColumns': 0
             });
         }).toThrow("The table must have at least one column and one row!");
@@ -220,7 +225,8 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no rows', () => {
         expect(() => {
-            table.validateConfig({
+            table.createDataTable({
+                'wrapperDivId': 'a',
                 'numRows': 0
             });
         }).toThrow("The table must have at least one column and one row!");
@@ -228,32 +234,29 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no fields for the cells', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': []
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': []
             });
         }).toThrow("Each cell must have at least one entry field.");
     });
 
     test('check that an error is thrown if config has no types for the cell fields', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': ["Placeholder"],
-                    'types': []
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': ["Placeholder"],
+                'types': []
             });
         }).toThrow("Each entry field must have a type associated with it.");
     });
 
     test('check that an error is thrown if one of the field types is not supported', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': ["Placeholder"],
-                    'types': [String]
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': ["Placeholder"],
+                'types': [String]
             });
         }).toThrow("Each entry field must be one of the following types: Boolean, Number, or Array");
     });

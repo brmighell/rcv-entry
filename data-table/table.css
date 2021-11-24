@@ -8,11 +8,8 @@ body {
   align-items: center;
   padding: 12px 16px;
 
-  position: absolute;
   width: 224px;
   height: 46px;
-  left: 49px;
-  top: 241px;
 
   background: #FFFFFF;
   border: 2px solid #D9D9D9;
