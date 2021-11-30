@@ -21,6 +21,7 @@ def initialize_static_lines():
     return [
         '# A lightweight HTML+JS library for inputting two-dimensional form data\n\n',
         'See this project at [https://brmighell.github.io/rcv-entry/]\n\n',
+        '[![Coverage Status](https://coveralls.io/repos/github/brmighell/rcv-entry/badge.svg?branch=main)](https://coveralls.io/github/brmighell/rcv-entry?branch=main)',
     ]
 
 

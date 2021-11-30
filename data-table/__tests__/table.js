@@ -59,7 +59,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     test('check the add column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[0].click();
@@ -70,7 +70,7 @@ describe('basic tests to ensure the buttons can function well', () => {
     test('check the delete column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("add-row-button");
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[1].click();
@@ -79,21 +79,114 @@ describe('basic tests to ensure the buttons can function well', () => {
     });
 
     test('check the add a row button fuctionality', () => {
-        const addButton = document.getElementsByClassName("add-row-button");
+        const numRows = 4;
+        const numCols = 4;
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[2].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(20);
+        expect(contents.length).toEqual((numRows+1) * numCols);
     });
 
     test('check the delete a row button fuctionality', () => {
-        const addButton = document.getElementsByClassName("add-row-button");
+        const numRows = 4;
+        const numCols = 4;
+        const addButton = document.getElementsByClassName("left-panel-button");
         let contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(16);
+        expect(contents.length).toEqual(numRows * numCols);
         addButton[3].click();
         contents = document.getElementsByClassName("data-table-cell");
-        expect(contents.length).toEqual(12);
+        expect(contents.length).toEqual(numRows * (numCols-1));
+    });
+});
+
+describe('ensure row and columns can be independently set to editable', () => {
+    function childInColHeaderCell(col) {
+        const cell = document.getElementById(`_theadId_div-id__row_0_and_col_${col}_`);
+        if (cell == null) {
+            return null;
+        }
+        return cell.children[0];
+    }
+    function childInRowHeaderCell(row) {
+        const cell = document.getElementById(`div-id_row_${row}_and_col_0_`);
+        if (cell == null) {
+            return null;
+        }
+        return cell.children[0];
+    }
+    test('Ensure inputs exist on both row and col', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1).tagName).toEqual('INPUT');
+    });
+    test('Ensure inputs exist on only row', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': false
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1)).toEqual(undefined);
+    });
+    test('Ensure inputs exist on only col', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': false,
+            'canEditColumnHeader': true
+        });
+
+        expect(childInRowHeaderCell(1)).toEqual(undefined);
+        expect(childInColHeaderCell(1).tagName).toEqual('INPUT');
+    });
+    test('Ensure defaults are row only', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+
+        expect(childInRowHeaderCell(1).tagName).toEqual('INPUT');
+        expect(childInColHeaderCell(1)).toEqual(undefined);
+    });
+    test('Ensure add col also adds an input', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const addColButton = leftButtons[0];
+
+        // Doesn't exist before button click
+        expect(childInColHeaderCell(4)).toEqual(null);
+
+        // Does exist after
+        addColButton.click();
+        expect(childInColHeaderCell(4).tagName).toEqual('INPUT');
+    });
+    test('Ensure add row also adds an input', () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'canEditRowHeader': true,
+            'canEditColumnHeader': true
+        });
+
+        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const addColButton = leftButtons[2];
+
+        // Doesn't exist before button click
+        expect(childInRowHeaderCell(4)).toEqual(null);
+
+        // Does exist after
+        addColButton.click();
+        expect(childInRowHeaderCell(4).tagName).toEqual('INPUT');
     });
 });
 
@@ -212,7 +305,8 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no columns', () => {
         expect(() => {
-            table.validateConfig({
+            table.createDataTable({
+                'wrapperDivId': 'a',
                 'numColumns': 0
             });
         }).toThrow("The table must have at least one column and one row!");
@@ -220,7 +314,8 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no rows', () => {
         expect(() => {
-            table.validateConfig({
+            table.createDataTable({
+                'wrapperDivId': 'a',
                 'numRows': 0
             });
         }).toThrow("The table must have at least one column and one row!");
@@ -228,32 +323,29 @@ describe('API basic tests', () => {
 
     test('check that an error is thrown if config has no fields for the cells', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': []
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': []
             });
         }).toThrow("Each cell must have at least one entry field.");
     });
 
     test('check that an error is thrown if config has no types for the cell fields', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': ["Placeholder"],
-                    'types': []
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': ["Placeholder"],
+                'types': []
             });
         }).toThrow("Each entry field must have a type associated with it.");
     });
 
     test('check that an error is thrown if one of the field types is not supported', () => {
         expect(() => {
-            table.validateConfig({
-                'datumConfig': {
-                    'names': ["Placeholder"],
-                    'types': [String]
-                }
+            table.createDataTable({
+                'wrapperDivId': 'a',
+                'names': ["Placeholder"],
+                'types': [String]
             });
         }).toThrow("Each entry field must be one of the following types: Boolean, Number, or Array");
     });

@@ -20,14 +20,14 @@ class Config {
      * @property {number} numColumns    - Number of columns in the table
      * @property {string} rowsName      - Name of rows in the table
      * @property {string} columnsName   - Name of columns in the table
+     * @property {bool}   canEditRowHeader    - Are the row names editable?
+     * @property {bool}   canEditColumnHeader - Are the column names editable?
      * @property {object} tableIds      - Container for all the table's magic strings
      * @property {object} datumConfig   - Container for default values of a cell
      */
     constructor(clientConfig) {
-        this.numRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
-        /* numColumns also accounts for row names - assumes that the user is asking for:
-           "this many columns plus one column for row names" */
-        this.numColumns = clientConfig.numColumns === undefined ? 4 : clientConfig.numColumns + 1;
+        this.defaultNumRows = clientConfig.numRows === undefined ? 3 : clientConfig.numRows;
+        this.defaultNumColumns = clientConfig.numColumns === undefined ? 3 : clientConfig.numColumns;
         this.rowsName = clientConfig.rowsName === undefined ? "Row" : clientConfig.rowsName;
         this.columnsName = clientConfig.columnsName === undefined ? "Column" : clientConfig.columnsName;
         /**
@@ -36,6 +36,8 @@ class Config {
         this.rowsNamePlural = this.rowsName + "s";
         this.columnsNamePlural = this.columnsName + "s";
         this.wrapperDivId = clientConfig.wrapperDivId;
+        this.canEditRowHeader = clientConfig.canEditRowHeader === undefined ? true : clientConfig.canEditRowHeader;
+        this.canEditColumnHeader = clientConfig.canEditColumnHeader === undefined ? false : clientConfig.canEditColumnHeader;
 
         /**
          * @property {string} tableDivId        - ID for the div containing the table
@@ -45,16 +47,16 @@ class Config {
          * @property {string} tbodyElementId    - ID for the table's body element
          */
         this.tableIds = {
-            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId,
-            tableElementId: '_tableId_' + clientConfig.wrapperDivId,
-            theadElementId: '_theadId_' + clientConfig.wrapperDivId,
-            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId
+            tableDivId: '_tableDivId_' + clientConfig.wrapperDivId + '_',
+            tableElementId: '_tableId_' + clientConfig.wrapperDivId + '_',
+            theadElementId: '_theadId_' + clientConfig.wrapperDivId + '_',
+            tbodyElementId: '_tbodyId_' + clientConfig.wrapperDivId + '_'
         }
 
         this.entryIds = {
-            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId,
-            colInputId: '_colInputId_' + clientConfig.wrapperDivId,
-            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId
+            entryBoxDivId: '_entryBoxDivId_' + clientConfig.wrapperDivId + '_',
+            colInputId: '_colInputId_' + clientConfig.wrapperDivId + '_',
+            rowInputId: '_rowInputId_' + clientConfig.wrapperDivId + '_'
         }
 
         /**
@@ -69,6 +71,13 @@ class Config {
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
             callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, null] : clientConfig.callbacks
         }
+
+        /**
+         * Below is not actual config data - just cached data
+         * Note: both of these include the header rows
+         */
+        this.currNumRows = 0;
+        this.currNumColumns = 0;
     }
 }
 
@@ -99,11 +108,6 @@ function invalidIfNegative(value) {
  * @throws Error                - If any required option is not provided
  */
 function setConfig(clientConfig) {
-
-    if (clientConfig.wrapperDivId === undefined) {
-        throw new Error("An ID for the wrapper div is required");
-    }
-
     let config = new Config(clientConfig);
 
     validateConfig(config);
@@ -118,8 +122,11 @@ function setConfig(clientConfig) {
  * @throws Error            - If any option is provided incorrectly
  */
 function validateConfig(config) {
+    if (config.wrapperDivId === undefined) {
+        throw new Error("An ID for the wrapper div is required");
+    }
 
-    if (config.numColumns <= 0 || config.numRows <= 0) {
+    if (config.defaultNumColumns <= 0 || config.defaultNumRows <= 0) {
         throw new Error("The table must have at least one column and one row!");
     }
 
@@ -186,74 +193,84 @@ function createTable(config) {
     document.getElementById(config.wrapperDivId).appendChild(tableDiv)
 
     createColumnHeader(config);
-    addMultipleRows(config, config.numRows, 0);
+
+    for (let row = 1; row < config.defaultNumRows + 1; row++) {
+        addSingleRow(config);
+    }
 }
 
 function createColumnHeader(config) {
     // Insert a row into the body of the table
     let row = document.getElementById(config.tableIds.theadElementId).insertRow(0);
     // Then for each column
-    for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
+    for (let colIndex = 0; colIndex < config.defaultNumColumns + 1; colIndex++) {
         // Create an entry cell
         let cell = row.insertCell(colIndex);
         cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
         cell.classList.add("data-table-cell");
 
-        let cellText = colIndex === 0 ? config.rowsNamePlural : config.columnsName + " " + colIndex;
-        cell.appendChild(document.createTextNode(cellText));
+        cell.appendChild(createColumnHeaderCell(config, colIndex));
     }
+
+    config.currNumColumns = config.defaultNumColumns + 1;
+    config.currNumRows = 1;
 }
 
-/**
- * Adds columns to the table.
- * @param {object} config       - Table configuration object
- * @param {Number} numberOfColumns - Number of columns to be added
- * @returns {undefined}         - Doesn't return anything
- */
- function addMultipleColumns(config, numberOfColumns) {
-    for(let i = 0; i < numberOfColumns; i++){
-        addSingleColumn(config);
+function createColumnHeaderCell(config, colIndex) {
+    if (colIndex === 0) {
+        return document.createTextNode(config.rowsNamePlural);
     }
+    if (!config.canEditColumnHeader) {
+        let cellText = config.columnsName + " " + colIndex;
+        return document.createTextNode(cellText);
+    }
+
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = config.columnsName;
+    input.classList.add('table-entry-field');
+    return input;
+}
+
+function createRowHeaderCell(config, rowIndex) {
+    if (!config.canEditRowHeader) {
+        let cellText = config.rowsName + " " + rowIndex;
+        return document.createTextNode(cellText);
+    }
+
+    // Creates the field for text input
+    let input = document.createElement("INPUT");
+    input.type = 'text';
+    input.placeholder = config.rowsName;
+    input.classList.add('table-entry-field');
+    return input;
 }
 
 /**
  * Adds a single column to the table
- * @param {object} config   - Table configuration object
- * @returns {undefined}     - Doesn't return anything
+ * @param {object} config     - Table configuration object
+ * @param {String} [content]  - Content to place in the top cell of a column (uses default if
+ *                                no string is provided)
+ * @returns {undefined}       - Doesn't return anything
  */
-function addSingleColumn(config){
+function addSingleColumn(config) {
     let table = document.getElementById(config.tableIds.tableElementId);
-    let numRows = table.rows.length; // get length row right now
-    let numCols = table.rows[0].cells.length;
+    let numRows = config.currNumRows;
+    let numCols = config.currNumColumns;
 
     let cell = table.rows[0].insertCell(numCols);
     cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
     cell.classList.add("data-table-cell");
 
-    let middle = document.createTextNode(config.columnsName + " " + numCols);
-
-    cell.appendChild(middle);
+    cell.appendChild(createColumnHeaderCell(config, numCols));
 
     for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
 
     }
-    config.numColumns += 1;
-}
 
-/**
- * Deletes multiple Columns from an existing table
- *
- * TODO: Implement Serialization
- *
- * @param {object} config       - Table configuration object
- * @param {Number} numberOfColumns - The number of columns to be deleted
- * @returns {undefined}         - Doesn't return anything
- */
-function deleteColumns(config, numberOfColumns) {
-    for(let i = 0; i < numberOfColumns; i++){
-        deleteSingleColumn(config);
-    }
+    config.currNumColumns += 1;
 }
 
 /**
@@ -264,66 +281,43 @@ function deleteColumns(config, numberOfColumns) {
  */
 function deleteSingleColumn(config) {
     let table = document.getElementById(config.tableIds.tableElementId);
-    let numRows = table.rows.length; // get length row right now
+    let numRows = config.currNumRows;
     for (let i = 0; i < numRows; i++){
         table.rows[i].deleteCell(-1);
     }
-    config.numColumns -= 1;
-}
-
-/**
- * Adds rows to the table.
- * @param {object} config       - Table configuration object
- * @param {Number} numberOfRows - Number of rows to be added
- * @param {Number} index        - Vertical index where to start adding rows
- * @returns {undefined}         - Doesn't return anything
- */
-function addMultipleRows(config, numberOfRows, index) {
-    // For each of the newly requested rows
-    for (let newRow = 0; newRow < numberOfRows; newRow++) {
-        // The third argument of addSingleRow is optional and can be safely omitted.
-        addSingleRow(config, index + newRow);
-    }
+    config.currNumColumns -= 1;
 }
 
 /**
  * Adds a single row to the table
  * @param {object} config       - Table configuration object
- * @param {Number} rowIndex     - Where to insert the row
  * @param {String} [content]    - Content to place in the left-most cell of a row (uses default if
  *                                  no string is provided)
  * @returns {undefined}         - Doesn't return anything
  */
-function addSingleRow(config, rowIndex, content) {
+function addSingleRow(config) {
     // Insert a row into the body of the table
-    let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex);
+    let rowIndex = config.currNumRows;
+    let row = document.getElementById(config.tableIds.tbodyElementId).insertRow(rowIndex - 1);
     // Then for each column
-    for (let colIndex = 0; colIndex < config.numColumns; colIndex++) {
+    for (let colIndex = 0; colIndex < config.currNumColumns; colIndex++) {
         // Create an entry cell
         if (colIndex === 0) {
-            createRowHeader(config, row, rowIndex, colIndex, content)
+            createRowHeader(config, row, rowIndex, colIndex)
         } else {
             createEntryCell(config, row, rowIndex, colIndex)
         }
     }
 
-    if (rowIndex >= config.numRows) {
-        config.numRows += 1;
-    }
+    config.currNumRows += 1;
 }
 
 // eslint-disable-next-line max-params
-function createRowHeader(config, row, rowIndex, colIndex, content) {
-
+function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
-
-    if (content === undefined) {
-        cell.innerHTML = (rowIndex + 1);
-    } else {
-        cell.innerHTML = content;
-    }
+    cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
 
 /**
@@ -335,7 +329,6 @@ function createRowHeader(config, row, rowIndex, colIndex, content) {
  * @returns {undefined}             - Doesn't return anything
  */
 function createEntryCell(config, row, rowIndex, colIndex) {
-
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("data-table-cell");
@@ -410,12 +403,12 @@ function createCallbackListener(config, cell, field, fieldNum) {
         let fieldValue = null;
 
         // Gets value of the field, depending on what type of field it is
-        if (field.type.toString() == 'text') {
+        if (field.type.toString() === 'text') {
             fieldValue = [field.value.trim()]
-        } else if (field.type.toString() == 'checkbox') {
+        } else if (field.type.toString() === 'checkbox') {
             fieldValue = [field.checked]
-        } else if (field.type.toString() == 'dropdown') {
-            fieldValue = config.datumConfig.values[fieldNum][field.selectedIndex]
+        } else if (field.type.toString() === 'dropdown') {
+            fieldValue = [field.value]
         } else {
             throw String('Field has no class');
         }
@@ -437,7 +430,7 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
     /**
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
-    let errorStringId = cell.id + fieldNum + '_error';
+    let errorStringId = cell.id + fieldNum + '_error_';
 
     /**
      * FIXME: How can we improve callback code strings?
@@ -496,15 +489,12 @@ function deleteRows(config, numberOfRows, rowIndex) {
 /**
  * Deletes a single row from an existing table
  *
- * FIXME: This works when deleting from the bottom of the table. It does not support deleting from the middle!
- *
  * @param {object} config   - Table configuration object
- * @param {Number} rowIndex - Index of the row to be deleted
  * @returns {undefined}     - Doesn't return anything
  */
-function deleteSingleRow(config, rowIndex) {
-    document.getElementById(config.tableIds.tbodyElementId).deleteRow(rowIndex);
-    config.numRows -= 1;
+function deleteSingleRow(config) {
+    config.currNumRows -= 1;
+    document.getElementById(config.tableIds.tbodyElementId).deleteRow(config.currNumRows - 1);
 }
 
 /**
@@ -515,7 +505,7 @@ function deleteSingleRow(config, rowIndex) {
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
 function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
-    return wrapperDivId + "row_" + rowIndex + "_and_col_" + colIndex;
+    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_";
 }
 
 /**
@@ -540,47 +530,41 @@ function createColumnEntryBox(config) {
 }
 
 /**
+ * This function enables the user to enter the name of a row OR column,
+ * a helper for createColumnInputAndBtn and createRowInputAndBtn.
+ * @param {object} config        - Table configuration object
+ * @param {object} leftPanelInfo - Info needed for the left panel, requiring several
+ *                                 fields which are self-documenting: check the caller.
+ * @returns {undefined}          - Doesn't return anything
+ */
+function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
+    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
+
+    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
+    let addButton = document.createElement("button");
+    addButton.classList.add("left-panel-button");
+    addButton.innerHTML = "+ Add " + leftPanelInfo.name.toLowerCase() +
+                          " to " + leftPanelInfo.endDirection;
+    addButton.onclick = function () {
+        leftPanelInfo.addEntryFunction(config);
+    }
+    entryBoxDiv.appendChild(addButton);
+}
+
+/**
  * This function enables the user to enter the name of a column. Creates a field for text input
  * as well as a button that sends input text to addSingleColumn().
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
 function createColumnInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
-    // Creates the field for text input
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.id = config.entryIds.colInputId;
-    input.placeholder = "Number of " + config.columnsNamePlural.toLowerCase();
-    input.classList.add('enter-row-name');
-
-    // If the user hits enter while in the text box, click the addColumnBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-
-        if (event.code === "Enter") {
-            addColumnBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
-    // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-    /**
-     * TODO: Button will need to accept a number of columns from the user then pass that number to addMultipleColumns
-     */
-    let addColumnBtn = document.createElement("button");
-    addColumnBtn.classList.add("add-row-button");
-    addColumnBtn.innerHTML = "+ Add " + config.columnsName.toLowerCase() + " to right";
-    addColumnBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addMultipleColumns(config, parseInt(value, 10));
-        } else {
-            addSingleColumn(config);
-        }
-        input.value = '';
-    }
-    entryBoxDiv.appendChild(addColumnBtn);
+    const leftPanelInfo = {
+        entryID: config.entryIds.colInputId,
+        name: config.columnsName,
+        endDirection: 'right',
+        addEntryFunction: addSingleColumn
+    };
+    createRowOrColumnInputAndBtn(config, leftPanelInfo);
 }
 
 /**
@@ -590,20 +574,11 @@ function createColumnInputAndBtn(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createColumnDeleteBtn(config) {
-    let deleteColumnBtn = document.createElement("button");
-    deleteColumnBtn.innerHTML = "Delete " + config.columnsName.toLowerCase() + " from right";
-    deleteColumnBtn.classList.add("add-row-button");
-    deleteColumnBtn.onclick = function () {
-        let input = document.getElementById(config.entryIds.colInputId);
-        let value = input.value.trim();
-        if (value !== '') {
-            deleteColumns(config, parseInt(value, 10));
-        } else {
-            deleteSingleColumn(config);
-        }
-        input.value = '';
-    }
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteColumnBtn);
+    createDeleteBtn(config, {
+        nameLowerCase: config.columnsName.toLowerCase(),
+        deleteFunction: deleteSingleColumn,
+        endDirection: 'right'
+    });
 }
 
 /**
@@ -628,45 +603,31 @@ function createRowEntryBox(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowInputAndBtn(config) {
-    let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
+    const leftPanelInfo = {
+        entryID: config.entryIds.rowInputId,
+        name: config.rowsName,
+        endDirection: 'bottom',
+        addEntryFunction: addSingleRow
+    };
+    createRowOrColumnInputAndBtn(config, leftPanelInfo);
+}
 
-    // Creates the field for text input
-    /**
-     * TODO: Consider changing "input" to "textarea" to support multiline input
-     */
-    let input = document.createElement("INPUT");
-    input.type = 'text';
-    input.id = config.entryIds.rowInputId;
-    input.placeholder = "Enter " + config.rowsName.toLowerCase() + " name";
-    input.classList.add('enter-row-name');
-
-    // If the user hits enter while in the text box, click the addRowBtn
-    input.addEventListener("keyup", function(event) {
-        event.preventDefault();
-        /**
-         * FIXME: This might cause an error for mobile users. Potentially there's a better way than waiting for "enter"?
-         */
-        if (event.code === "Enter") {
-            addRowBtn.click();
-        }
-    })
-    entryBoxDiv.appendChild(input);
-
-    // Creates the button that will take the user input and send it to addSingleRow() when clicked
-    let addRowBtn = document.createElement("button");
-    addRowBtn.type = "button";
-    addRowBtn.innerHTML = "+ Add a " + config.rowsName.toLowerCase() + " to the bottom";
-    addRowBtn.classList.add("add-row-button");
-    addRowBtn.onclick = function () {
-        let value = input.value.trim();
-        if (value !== '') {
-            addSingleRow(config, config.numRows, value);
-        } else {
-            addSingleRow(config, config.numRows);
-        }
-        input.value = '';
+/**
+ * Creates a button that will call deleteSingleRow() or deleteSingleColumn()
+ * @param {object} config       - Table configuration object
+ * @param {object} buttonConfig - Config for row vs column - see caller for required fields
+ * @returns {undefined}         - Doesn't return anything
+ */
+function createDeleteBtn(config, buttonConfig) {
+    let deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.innerHTML = "Delete a " + buttonConfig.nameLowerCase +
+                          " from the " + buttonConfig.endDirection;
+    deleteBtn.classList.add("left-panel-button");
+    deleteBtn.onclick = function () {
+        buttonConfig.deleteFunction(config);
     }
-    entryBoxDiv.appendChild(addRowBtn);
+    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteBtn);
 }
 
 /**
@@ -676,44 +637,113 @@ function createRowInputAndBtn(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createRowDeleteBtn(config) {
-    let deleteRowBtn = document.createElement("button");
-    deleteRowBtn.type = "button";
-    deleteRowBtn.innerHTML = "Delete a " + config.rowsName.toLowerCase() + " from the bottom";
-    deleteRowBtn.classList.add("add-row-button") // this is just a temp. The icon will be replaced.
-    deleteRowBtn.onclick = function () {
-        deleteSingleRow(config, config.numRows - 1);
-    }
-    document.getElementById(config.entryIds.entryBoxDivId).appendChild(deleteRowBtn);
+    createDeleteBtn(config, {
+        nameLowerCase: config.rowsName.toLowerCase(),
+        deleteFunction: deleteSingleRow,
+        endDirection: 'bottom'
+    });
 }
 
 /**
- * This function clears out an old table and reinitialize it with the previously passed-in clientConfig
+ * This button causes a JSON object containing the table's
+ * contents to be printed to the console
  * @param {object} clientConfig - Client configuration requests
  * @returns {undefined}         - Doesn't return anything
  */
-function createResetButton(clientConfig) {
+function createJSONButton(clientConfig) {
     let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
 
-    let resetBtn = document.createElement("button");
-    resetBtn.type = "button";
-    resetBtn.innerHTML = "Reset the table";
+    let JSONBtn = document.createElement("button");
+    JSONBtn.type = "button";
+    JSONBtn.innerHTML = "Print JSON to console";
 
-    // Clears the wrapper div, deletes the old config object, and calls dtCreateDataTable again
-    resetBtn.onclick = function () {
-        wrapperDiv.innerHTML = '';
-        Reflect.deleteProperty(configDict, clientConfig.wrapperDivId);
-        dtCreateDataTable(clientConfig);
+    JSONBtn.onclick = function () {
+        // eslint-disable-next-line no-console
+        console.log(dtToJSON(clientConfig));
     }
-    wrapperDiv.appendChild(resetBtn);
+    wrapperDiv.appendChild(JSONBtn);
 }
 
-    /**
-// eslint-disable-next-line no-unused-vars
-/** function toJSON() {
-     * Parses data held in HTML to JSON and sends it to client
-     * TODO: Fill this out
-     * TODO: Implement Serialization
-} */
+/**
+ * Returns the HTML element corresponding to a cell at a specific index
+ * @param {object} config           - Table configuration object
+ * @param {Number} row              - Row on which the cell is located
+ * @param {Number} column           - Column in which the cell is located
+ * @returns {HTMLTableCellElement}  - HTML element of a specific cell
+ */
+function getCellElement(config, row, column) {
+    return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
+}
+
+/**
+ * Gets a 2D array containing all data from all fields of all cells in the table
+ * @param {object} config   - Table configuration object
+ * @returns {*[]}           - 2D array of cell objects
+ */
+function getTableData(config) {
+    let tableData = [];
+    for (let row = 0; row < config.numRows; row++) {
+        tableData.push(getRowData(config, row));
+    }
+    return tableData;
+}
+
+/**
+ * Gets a 1D array containing all data from all fields of all cells in a specific row of the table
+ * @param {object} config   - Table configuration object
+ * @param {Number} row      - Specific row to pull data from
+ * @returns {*[]}           - 1D array of cell objects
+ */
+function getRowData(config, row) {
+    let rowData = [];
+    for (let col = 1; col < config.numColumns; col++) {
+        rowData.push(getCellData(config, row, col));
+    }
+    return rowData
+}
+
+/**
+ * Gets an object containing all data from all fields of a specific cell
+ * @param {object} config   - Table configuration object
+ * @param {Number} row      - Row index for the cell
+ * @param {Number} col      - Column index for the cell
+ * @returns {object}        - Object containing cell data in the following format: {[fieldName]:[fieldValue],...}
+ */
+function getCellData(config, row, col) {
+    let cellData = {};
+    let cell = getCellElement(config, row, col);
+
+    /*
+    Assumes that each cell has only field labels as children
+     */
+    cell.childNodes.forEach(function (label, index) {
+        /*
+        Assumes that each label has two children. The first is
+        text containing the label's name and the second is the
+        space the user can interact with.
+         */
+        let value = null;
+        switch (config.datumConfig.types[index]) {
+            case Number:
+                value = parseInt(label.childNodes[1].value, 10);
+                break;
+            case Boolean:
+                value = label.childNodes[1].checked;
+                break;
+            case String:
+            case Array:
+                value = label.childNodes[1].value;
+                break;
+            default:
+                throw String("Label " + label.innerHTML + " does not have a supported field.");
+        }
+        /**
+         * FIXME: How do we want cell properties to be named? Do we care about lowercase?
+         */
+        cellData[config.datumConfig.names[index].toLowerCase()] = value;
+    })
+    return cellData;
+}
 
 /**
  * Public functions below
@@ -731,10 +761,35 @@ function dtCreateDataTable(clientConfig) {
 
     createTable(configDict[clientConfig.wrapperDivId]);
 
-    createResetButton(clientConfig);
+    /**
+     * FIXME: Remove this function call and declaration when done testing
+     */
+    createJSONButton(clientConfig);
 
-    createEntryBox(configDict[clientConfig.wrapperDivId])
+    createEntryBox(configDict[clientConfig.wrapperDivId]);
+}
 
+/**
+ * Parses data held in HTML to JSON and sends it to client
+ * @param {object} clientConfig - the config
+ * @returns {object} jsonObject - the JSON string object
+ * */
+function dtToJSON(clientConfig) {
+    let config = configDict[clientConfig.wrapperDivId];
+    let rowNames = [];
+    for (let row = 0; row < config.numRows; row++) {
+        rowNames[row] = getCellElement(config, row, 0).innerHTML;
+    }
+    // Currently don't support custom column names
+    let columnNames = [];
+    let data = getTableData(config);
+    let jsonObject = {
+        "version": 1,
+        rowNames,
+        columnNames,
+        data
+    }
+    return JSON.stringify(jsonObject)
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -786,5 +841,5 @@ function dtCreateDataTable(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
-    exports.validateConfig = validateConfig;
+    exports.toJSON = dtToJSON;
 }

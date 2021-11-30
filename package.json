@@ -1,6 +1,6 @@
 {
-  "name": "rcv-entry",
-  "version": "0.0.1",
+  "name": "usfca-data-table",
+  "version": "0.0.2",
   "description": "data table test",
   "main": "data-table/table.js",
   "directories": {
