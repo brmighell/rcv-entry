@@ -438,9 +438,6 @@ function createCallbackListener(config, cell, field, fieldNum) {
  * @returns {undefined}                     - Doesn't return anything
  */
 function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
-    /**
-     * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
-     */
     let errorStringId = cell.id + fieldNum + '_error_';
 
     if (errorMessage !== null && errorMessage !== undefined) {
@@ -450,12 +447,19 @@ function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
          */
         cell.classList.replace('dt_cell', 'dt_invalid-cell');
 
-        // And then adds an error message to the bottom of the cell
-        let errorMessageElement = document.createElement("P");
+        // Try to find the existing error message to update
+        let errorMessageElement = document.getElementById(errorStringId);
+
+        // Create error message if it doesn't exist
+        if (errorMessageElement === null) {
+            errorMessageElement = document.createElement("P");
+            errorMessageElement.classList.add('dt_error-message');
+            errorMessageElement.id = errorStringId;
+            cell.appendChild(errorMessageElement);
+        }
+
+        // Update the text
         errorMessageElement.innerHTML = errorMessage;
-        errorMessageElement.classList.add('dt_error-message');
-        errorMessageElement.id = errorStringId;
-        cell.appendChild(errorMessageElement);
     } else if (cell.classList.contains('dt_invalid-cell')) {
         // If the field entry is no longer invalid, change cell back to normal and remove error message
         cell.classList.replace('dt_invalid-cell', 'dt_cell');
