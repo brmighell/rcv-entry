@@ -156,15 +156,13 @@ function validateConfig(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createSubDivs(config) {
-    let subDivClass = "SubDiv";
-
     let entryBoxDiv = document.createElement("div");
     entryBoxDiv.id = config.entryIds.entryBoxDivId;
-    entryBoxDiv.classList.add(subDivClass);
+    entryBoxDiv.classList.add("dt_left-panel");
 
     let tableDiv = document.createElement("div");
     tableDiv.id = config.tableIds.tableDivId;
-    tableDiv.classList.add(subDivClass);
+    entryBoxDiv.classList.add("dt_right-panel");
 
     document.getElementById(config.wrapperDivId).appendChild(entryBoxDiv);
     document.getElementById(config.wrapperDivId).appendChild(tableDiv);
@@ -178,7 +176,7 @@ function createSubDivs(config) {
 function createTable(config) {
     let table = document.createElement("table");
     table.id = config.tableIds.tableElementId;
-    table.classList.add("data-table");
+    table.classList.add("dt_inner-table");
 
     let thead = document.createElement("thead");
     thead.id = config.tableIds.theadElementId;
@@ -207,7 +205,7 @@ function createColumnHeader(config) {
         // Create an entry cell
         let cell = row.insertCell(colIndex);
         cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
-        cell.classList.add("data-table-cell");
+        cell.classList.add("dt_cell");
 
         cell.appendChild(createColumnHeaderCell(config, colIndex));
     }
@@ -229,7 +227,7 @@ function createColumnHeaderCell(config, colIndex) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = config.columnsName;
-    input.classList.add('table-entry-field');
+    input.classList.add('dt_table-entry-field');
     return input;
 }
 
@@ -243,7 +241,7 @@ function createRowHeaderCell(config, rowIndex) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = config.rowsName;
-    input.classList.add('table-entry-field');
+    input.classList.add('dt_table-entry-field');
     return input;
 }
 
@@ -255,7 +253,7 @@ function createRowHeaderCell(config, rowIndex) {
 function createLeftPanelButton(text) {
     let button = document.createElement("button");
     button.type = "button";
-    button.classList.add("left-panel-button");
+    button.classList.add("dt_left-panel-button");
     button.innerHTML = text;
     return button;
 }
@@ -274,7 +272,7 @@ function addSingleColumn(config) {
 
     let cell = table.rows[0].insertCell(numCols);
     cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
 
     cell.appendChild(createColumnHeaderCell(config, numCols));
 
@@ -329,7 +327,7 @@ function addSingleRow(config) {
 function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
     cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
 
@@ -344,32 +342,32 @@ function createRowHeader(config, row, rowIndex, colIndex) {
 function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
 
         let label = document.createElement("LABEL");
         label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
-        label.classList.add('cell-label');
+        label.classList.add('dt_cell-label');
 
         let field = null;
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
-            input.classList.add('cell-input');
+            input.classList.add('dt_cell-input');
             field = input;
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
-            input.classList.add('cell-checkbox');
+            input.classList.add('dt_cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             field = input;
         } else if (type === Array) {
             let select = document.createElement("select");
             select.type = 'dropdown';
-            select.classList.add('cell-dropdown');
+            select.classList.add('dt_cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
                 let option = document.createElement("option");
                 option.innerHTML = config.datumConfig.values[fieldNum][i];
@@ -453,18 +451,18 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
         /**
          * FIXME: Instead of replacing this, have the invalid style be toggleable
          */
-        cell.classList.replace('data-table-cell', 'invalid-cell');
+        cell.classList.replace('dt_cell', 'dt_invalid-cell');
 
         // And then adds an error message to the bottom of the cell
         let errorMessage = document.createElement("P");
         errorMessage.innerHTML = ("Invalid " + config.datumConfig.names[fieldNum].toLowerCase());
-        errorMessage.classList.add('error-message');
+        errorMessage.classList.add('dt_error-message');
         errorMessage.id = errorStringId;
         cell.appendChild(errorMessage);
     } else {
         // If the field entry is no longer invalid, change cell back to normal and remove error message
-        if (cell.classList.contains('invalid-cell')) {
-            cell.classList.replace('invalid-cell', 'data-table-cell');
+        if (cell.classList.contains('dt_invalid-cell')) {
+            cell.classList.replace('dt_invalid-cell', 'dt_cell');
             cell.removeChild(document.getElementById(errorStringId));
         }
 
