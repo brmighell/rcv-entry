@@ -665,7 +665,7 @@ function createJSONButton(clientConfig) {
 
     JSONBtn.onclick = function () {
         // eslint-disable-next-line no-console
-        console.log(dtToJSON(clientConfig));
+        console.log(dtToJSON(clientConfig.wrapperDivId));
     }
     wrapperDiv.appendChild(JSONBtn);
 }
@@ -673,11 +673,17 @@ function createJSONButton(clientConfig) {
 /**
  * Returns the HTML element corresponding to a cell at a specific index
  * @param {object} config           - Table configuration object
- * @param {Number} row              - Row on which the cell is located
- * @param {Number} column           - Column in which the cell is located
+ * @param {Number} row              - Row on which the cell is located, indexed including headers
+ * @param {Number} column           - Column in which the cell is located, indexed including headers
  * @returns {HTMLTableCellElement}  - HTML element of a specific cell
  */
 function getCellElement(config, row, column) {
+    if (row < 1 || row >= config.currNumRows) {
+        throw new Error("Invalid row number");
+    }
+    if (column < 1 || column >= config.currNumColumns) {
+        throw new Error("Invalid column number");
+    }
     return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
 }
 
@@ -711,8 +717,8 @@ function getRowData(config, row) {
 /**
  * Gets an object containing all data from all fields of a specific cell
  * @param {object} config   - Table configuration object
- * @param {Number} row      - Row index for the cell
- * @param {Number} col      - Column index for the cell
+ * @param {Number} row      - Row index for the cell, indexed including headers
+ * @param {Number} col      - Column index for the cell, indexed including headers
  * @returns {object}        - Object containing cell data in the following format: {[fieldName]:[fieldValue],...}
  */
 function getCellData(config, row, col) {
@@ -776,12 +782,69 @@ function dtCreateDataTable(clientConfig) {
 }
 
 /**
+ * Function available to client in order to get the data at a specified cell
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @returns {object}            - Dictionary in the following format: {[fieldName]:[fieldValue],...}
+ */
+function dtGetCellData(wrapperDivId, row, col) {
+    let config = configDict[wrapperDivId];
+    return getCellData(config, row + 1, col + 1);
+}
+
+/**
+ * Function available to client in order to mark an arbitrary cell as having invalid data
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {string} message      - the error message to display
+ * @returns {undefined}         - Doesn't return anything
+ */
+// eslint-disable-next-line no-unused-vars
+function dtSetCellErrorMessage(wrapperDivId, row, col, message) {
+    throw new Error("Not implemented yet");
+}
+
+/**
+ * Function available to client in order to clear an arbitrary cell's error message
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @returns {undefined}         - Doesn't return anything
+ */
+// eslint-disable-next-line no-unused-vars
+function dtClearCellErrorMessage(wrapperDivId, row, col) {
+    throw new Error("Not implemented yet");
+}
+
+/**
+ * Function available to client in order to get the number of rows
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @returns {int}               - Number of rows of data (i.e. not including the header row)
+ */
+function dtGetNumRows(wrapperDivId) {
+    let config = configDict[wrapperDivId];
+    return config.currNumRows - 1;
+}
+
+/**
+ * Function available to client in order to get the number of columns
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @returns {int}               - Number of columns of data (i.e. not including the header column)
+ */
+function dtGetNumColumns(wrapperDivId) {
+    let config = configDict[wrapperDivId];
+    return config.currNumColumns - 1;
+}
+
+/**
  * Parses data held in HTML to JSON and sends it to client
- * @param {object} clientConfig - the config
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
  * @returns {object} jsonObject - the JSON string object
  * */
-function dtToJSON(clientConfig) {
-    let config = configDict[clientConfig.wrapperDivId];
+function dtToJSON(wrapperDivId) {
+    let config = configDict[wrapperDivId];
     let rowNames = [];
     for (let row = 0; row < config.numRows; row++) {
         rowNames[row] = getCellElement(config, row, 0).innerHTML;
@@ -847,5 +910,10 @@ function dtToJSON(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.getCellData = dtGetCellData;
+    exports.getNumRows = dtGetNumRows;
+    exports.getNumColumns = dtGetNumColumns;
+    exports.setCellErrorMessage = dtSetCellErrorMessage;
+    exports.clearCellErrorMessage = dtClearCellErrorMessage;
     exports.toJSON = dtToJSON;
 }
