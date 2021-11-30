@@ -31,12 +31,12 @@ describe('basic tests to ensure createDataTable can function well', () => {
     });
 
     test('properly test the first cell', () => {
-        const contents = document.getElementsByClassName('data-table-cell')[0].textContent;
+        const contents = document.getElementsByClassName('dt_cell')[0].textContent;
         expect(contents).toEqual('Rows');
     });
 
     test('properly test the first cell', () => {
-        const contents = document.getElementsByClassName('data-table-cell')[1].textContent;
+        const contents = document.getElementsByClassName('dt_cell')[1].textContent;
         expect(contents).toEqual('Column 1');
     });
 
@@ -59,44 +59,44 @@ describe('basic tests to ensure the buttons can function well', () => {
     test('check the add column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("left-panel-button");
-        let contents = document.getElementsByClassName("data-table-cell");
+        const addButton = document.getElementsByClassName("dt_left-panel-button");
+        let contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[0].click();
-        contents = document.getElementsByClassName("data-table-cell");
+        contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * (numCols + 1));
     });
 
     test('check the delete column button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("left-panel-button");
-        let contents = document.getElementsByClassName("data-table-cell");
+        const addButton = document.getElementsByClassName("dt_left-panel-button");
+        let contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[1].click();
-        contents = document.getElementsByClassName("data-table-cell");
+        contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * (numCols - 1));
     });
 
     test('check the add a row button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("left-panel-button");
-        let contents = document.getElementsByClassName("data-table-cell");
+        const addButton = document.getElementsByClassName("dt_left-panel-button");
+        let contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[2].click();
-        contents = document.getElementsByClassName("data-table-cell");
+        contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual((numRows+1) * numCols);
     });
 
     test('check the delete a row button fuctionality', () => {
         const numRows = 4;
         const numCols = 4;
-        const addButton = document.getElementsByClassName("left-panel-button");
-        let contents = document.getElementsByClassName("data-table-cell");
+        const addButton = document.getElementsByClassName("dt_left-panel-button");
+        let contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * numCols);
         addButton[3].click();
-        contents = document.getElementsByClassName("data-table-cell");
+        contents = document.getElementsByClassName("dt_cell");
         expect(contents.length).toEqual(numRows * (numCols-1));
     });
 });
@@ -161,7 +161,7 @@ describe('ensure row and columns can be independently set to editable', () => {
             'canEditColumnHeader': true
         });
 
-        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const leftButtons = document.getElementsByClassName("dt_left-panel-button");
         const addColButton = leftButtons[0];
 
         // Doesn't exist before button click
@@ -178,7 +178,7 @@ describe('ensure row and columns can be independently set to editable', () => {
             'canEditColumnHeader': true
         });
 
-        const leftButtons = document.getElementsByClassName("left-panel-button");
+        const leftButtons = document.getElementsByClassName("dt_left-panel-button");
         const addColButton = leftButtons[2];
 
         // Doesn't exist before button click
@@ -262,12 +262,12 @@ describe('API basic tests', () => {
     });
 
     test('properly create default input field within each cell', () => {
-        let inputList = cellFieldList('cell-input');
+        let inputList = cellFieldList('dt_cell-input');
         expect(inputList.length).toEqual(9);
     });
 
     test('properly create default dropdown field within each cell', () => {
-        let dropdownList = cellFieldList('cell-dropdown');
+        let dropdownList = cellFieldList('dt_cell-dropdown');
         expect(dropdownList.length).toEqual(9);
     });
 
@@ -278,12 +278,12 @@ describe('API basic tests', () => {
             'types': [Boolean],
             'values': [false]
         });
-        let checkboxList = cellFieldList('cell-checkbox');
+        let checkboxList = cellFieldList('dt_cell-checkbox');
         expect(checkboxList.length).toEqual(9);
     });
 
     test('properly create checkbox field within each cell', () => {
-        let dropdownList = cellFieldList('cell-dropdown');
+        let dropdownList = cellFieldList('dt_cell-dropdown');
         for (let i = 0; i < 9; i++) {
             let res = dropdownList[i].options[0].text;
             expect(res).toBe("Active");
@@ -291,7 +291,7 @@ describe('API basic tests', () => {
     });
 
     test('properly test how many options for the dropdown filed', () => {
-        let dropdownList = cellFieldList('cell-dropdown');
+        let dropdownList = cellFieldList('dt_cell-dropdown');
         for (let i = 0; i < 9; i++) {
             let res = dropdownList[i].options.length;
             expect(res).toBe(2);
@@ -299,7 +299,7 @@ describe('API basic tests', () => {
     });
 
     test('properly create checkbox field within each cell', () => {
-        let inputList = cellFieldList('cell-input');
+        let inputList = cellFieldList('dt_cell-input');
         expect(inputList[0].getAttribute("placeholder")).toEqual("0");
     });
 
@@ -356,17 +356,17 @@ describe('Interaction tests', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
         expect(numErrorsVisible()).toEqual(0);
 
-        let input = document.getElementsByClassName('cell-input')[0];
+        let input = document.getElementsByClassName('dt_cell-input')[0];
         input.value = -23;
         input.dispatchEvent(new Event('focusout'));
 
-        expect(document.getElementsByClassName('invalid-cell').length).toEqual(1);
+        expect(document.getElementsByClassName('dt_invalid-cell').length).toEqual(1);
     });
 
     test('Valid input to text input field updates cell appropriately', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
 
-        let input = document.getElementsByClassName('cell-input')[0];
+        let input = document.getElementsByClassName('dt_cell-input')[0];
         input.value = -23;
         input.dispatchEvent(new Event('focusout'));
         input.value = 23;

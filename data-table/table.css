@@ -1,8 +1,4 @@
-body {
-    background-color: white;
-}
-
-.table-entry-field{
+.dt_table-entry-field{
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -17,7 +13,7 @@ body {
   border-radius: 8px;
 }
 
-.left-panel-button{
+.dt_left-panel-button{
   min-width: 200px;
   height: 46px;
   background: #FFFFFF;
@@ -31,7 +27,8 @@ body {
   flex-grow: 0;
   margin: 1px 0;
 }
-.data-table{
+
+.dt_inner-table{
   width: 659px;
   height: 228px;
   margin-top: 30px;
@@ -41,63 +38,20 @@ body {
   border-collapse: collapse;
 }
 
-.data-table-cell{
+.dt_cell{
   padding: 15px;
   border-width: 1px;
   border-style: solid;
 }
 
-.row-header-input{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 12px 16px;
-
-    width: 150px;
-    height: 46px;
-
-    background: #FFFFFF;
-    border: 2px solid #D9D9D9;
-    box-sizing: border-box;
-    border-radius: 8px;
-}
-
-.cell-input{
-    display: inline-block;
-    flex-direction: row;
-    align-items: center;
-    padding: 12px 2px;
-
-    width: 75px;
-    height: 25px;
-
-    background: #FFFFFF;
-    border: 2px solid #D9D9D9;
-    box-sizing: border-box;
-    border-radius: 8px;
-}
-
-.invalid-cell{
-  padding: 15px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: darkred;
-  background-color: #FF7F7F;
-}
-
-.error-message{
-  word-wrap: normal;
-  color: darkred;
-}
-
-.row-header-input{
-  display: flex;
+.dt_cell-input{
+  display: inline-block;
   flex-direction: row;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 2px;
 
-  width: 150px;
-  height: 46px;
+  width: 75px;
+  height: 25px;
 
   background: #FFFFFF;
   border: 2px solid #D9D9D9;
@@ -105,12 +59,24 @@ body {
   border-radius: 8px;
 }
 
-
-.cell-label{
-    white-space: nowrap;
+.dt_invalid-cell{
+  padding: 15px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: darkred;
+  background-color: #FF7F7F;
 }
 
-.cell-label::after{
-    content: "\a";
-    white-space: pre;
+.dt_error-message{
+  word-wrap: normal;
+  color: darkred;
+}
+
+.dt_cell-label{
+  white-space: nowrap;
+}
+
+.dt_cell-label::after{
+  content: "\a";
+  white-space: pre;
 }
