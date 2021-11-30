@@ -237,7 +237,7 @@ function invalidIfNegative(value) {
     if (value[0] < 0) {
         return 'Invalid';
     }
-    return 'Okay';
+    return null;
 }
 
 describe('API basic tests', () => {

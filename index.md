@@ -55,6 +55,10 @@ dtCreateDataTable(config);
 
 additional config options are described below.
 
+### Callbacks and data validation
+Each field can optionally trigger a callback when it is edited.
+Callback functions should return `null` or nothing (`undefined`) if there is no error, and return an error message (`string`) if there is an error.
+
 ### Configuration options
 The `config` dictionary has the following options:
 
