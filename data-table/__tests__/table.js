@@ -108,6 +108,31 @@ describe('basic tests to ensure the buttons can function well', () => {
         button.click();
         assertRowsColsEquals(2, 3);
     });
+
+    test('check that you can\'t delete all the rows', () => {
+        const button = document.getElementsByClassName("dt_left-panel-button")[3];
+        button.click();
+        assertRowsColsEquals(2, 3);
+        button.click();
+        assertRowsColsEquals(1, 3);
+
+        // Here, we get no change
+        button.click();
+        assertRowsColsEquals(1, 3);
+    });
+
+    test('check that you can\'t delete all the cols', () => {
+        const button = document.getElementsByClassName("dt_left-panel-button")[1];
+        button.click();
+        assertRowsColsEquals(3, 2);
+        button.click();
+        assertRowsColsEquals(3, 1);
+
+        // Here, we get no change
+        button.click();
+        assertRowsColsEquals(3, 1);
+    });
+
 });
 
 describe('ensure row and columns can be independently set to editable', () => {
