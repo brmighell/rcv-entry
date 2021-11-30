@@ -47,6 +47,14 @@ describe('basic tests to ensure createDataTable can function well', () => {
     test('check that data-table element is created', () => {
         expect(document.getElementsByClassName("data-table")).not.toEqual(null);
     });
+
+    test('check that getRows is properly 0-indexed', () => {
+        expect(table.getNumRows('div-id')).toEqual(3);
+    });
+
+    test('check that getCols is properly 0-indexed', () => {
+        expect(table.getNumColumns('div-id')).toEqual(3);
+    });
 });
 
 describe('basic tests to ensure the buttons can function well', () => {
@@ -56,48 +64,49 @@ describe('basic tests to ensure the buttons can function well', () => {
         });
     });
 
-    test('check the add column button fuctionality', () => {
-        const numRows = 4;
-        const numCols = 4;
-        const addButton = document.getElementsByClassName("dt_left-panel-button");
+    /**
+     * Runs a few assertions to make sure both the public functions and the actual table data
+     * match the expected values
+     * @param {int} numRows - the number of data rows (i.e. 0-indexed)
+     * @param {int} numCols - the number of data columns (i.e. 0-indexed)
+     * @returns {undefined}
+     */
+    function assertRowsColsEquals(numRows, numCols) {
+        // First, check the public functions
+        expect(table.getNumRows('div-id')).toEqual(numRows);
+        expect(table.getNumColumns('div-id')).toEqual(numCols);
+
+        // Note: add 1 to numRows and numCols to account for the headers
         let contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * numCols);
-        addButton[0].click();
-        contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * (numCols + 1));
+        expect(contents.length).toEqual((numRows+1) * (numCols+1));
+    }
+
+    test('check the add column button fuctionality', () => {
+        const button = document.getElementsByClassName("dt_left-panel-button")[0];
+        assertRowsColsEquals(3, 3);
+        button.click();
+        assertRowsColsEquals(3, 4);
     });
 
     test('check the delete column button fuctionality', () => {
-        const numRows = 4;
-        const numCols = 4;
-        const addButton = document.getElementsByClassName("dt_left-panel-button");
-        let contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * numCols);
-        addButton[1].click();
-        contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * (numCols - 1));
+        const button = document.getElementsByClassName("dt_left-panel-button")[1];
+        assertRowsColsEquals(3, 3);
+        button.click();
+        assertRowsColsEquals(3, 2);
     });
 
     test('check the add a row button fuctionality', () => {
-        const numRows = 4;
-        const numCols = 4;
-        const addButton = document.getElementsByClassName("dt_left-panel-button");
-        let contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * numCols);
-        addButton[2].click();
-        contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual((numRows+1) * numCols);
+        const button = document.getElementsByClassName("dt_left-panel-button")[2];
+        assertRowsColsEquals(3, 3);
+        button.click();
+        assertRowsColsEquals(4, 3);
     });
 
     test('check the delete a row button fuctionality', () => {
-        const numRows = 4;
-        const numCols = 4;
-        const addButton = document.getElementsByClassName("dt_left-panel-button");
-        let contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * numCols);
-        addButton[3].click();
-        contents = document.getElementsByClassName("dt_cell");
-        expect(contents.length).toEqual(numRows * (numCols-1));
+        const button = document.getElementsByClassName("dt_left-panel-button")[3];
+        assertRowsColsEquals(3, 3);
+        button.click();
+        assertRowsColsEquals(2, 3);
     });
 });
 
@@ -382,5 +391,35 @@ describe('Interaction tests', () => {
         for (const elem of elems) {
             expect(elem.type).toEqual("button");
         }
+    });
+});
+
+describe('Test cell getters and setters', () => {
+    beforeEach(() => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+    });
+
+    test('Can get simple data', () => {
+        expect(table.getCellData('div-id', 0, 0)).toEqual({'value': NaN, 'status': 'Active'});
+    });
+    test('Row too high throws error', () => {
+        expect(() => table.getCellData('div-id', 3, 0)).toThrow();
+    });
+    test('Last row does not throw error', () => {
+        expect(() => table.getCellData('div-id', 2, 0)).not.toThrow();
+    });
+    test('Col too high throws error', () => {
+        expect(() => table.getCellData('div-id', 0, 3)).toThrow();
+    });
+    test('Row too low throws error', () => {
+        expect(() => table.getCellData('div-id', -1, 0)).toThrow();
+    });
+    test('Can set an error message (TODO: not yet implemented)', () => {
+        expect(() => table.setCellErrorMessage('div-id', 1, 0, "test error")).toThrow();
+    });
+    test('Can clear an error message (TODO: not yet implemented)', () => {
+        expect(() => table.clearCellErrorMessage('div-id', 1, 0)).toThrow();
     });
 });
