@@ -374,4 +374,13 @@ describe('Interaction tests', () => {
 
         expect(numErrorsVisible()).toEqual(0);
     });
+
+    test('Ensure all buttons are non-submitting buttons', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+
+        const elems = document.getElementsByTagName("button");
+        for (const elem of elems) {
+            expect(elem.type).toEqual("button");
+        }
+    });
 });
