@@ -92,9 +92,9 @@ class Config {
  */
 function invalidIfNegative(value) {
     if (value < 0) {
-        return 'Invalid';
+        return 'Number cannot be negative';
     }
-    return 'Okay';
+    return null;
 }
 
 /**
@@ -424,8 +424,8 @@ function createCallbackListener(config, cell, field, fieldNum) {
             throw String('Field has no class');
         }
 
-        let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
-        handleCallbackReturn(config, cell, fieldNum, callbackCode);
+        let errorMessage = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
+        handleCallbackReturn(config, cell, fieldNum, errorMessage);
     })
 }
 
@@ -434,19 +434,16 @@ function createCallbackListener(config, cell, field, fieldNum) {
  * @param {object} config                   - Table configuration object
  * @param {HTMLTableDataCellElement} cell   - Cell within the table
  * @param {Number} fieldNum                 - Index of the field within the cell
- * @param {String} callbackCode             - Client's response to the field's value
+ * @param {String} errorMessage             - Client's response to the field's value (null if no error)
  * @returns {undefined}                     - Doesn't return anything
  */
-function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
+function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
     /**
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
     let errorStringId = cell.id + fieldNum + '_error_';
 
-    /**
-     * FIXME: How can we improve callback code strings?
-     */
-    if (callbackCode === 'Invalid') {
+    if (errorMessage !== null && errorMessage !== undefined) {
         // Turns the cell red
         /**
          * FIXME: Instead of replacing this, have the invalid style be toggleable
@@ -454,27 +451,15 @@ function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
         cell.classList.replace('dt_cell', 'dt_invalid-cell');
 
         // And then adds an error message to the bottom of the cell
-        let errorMessage = document.createElement("P");
-        errorMessage.innerHTML = ("Invalid " + config.datumConfig.names[fieldNum].toLowerCase());
-        errorMessage.classList.add('dt_error-message');
-        errorMessage.id = errorStringId;
-        cell.appendChild(errorMessage);
-    } else {
+        let errorMessageElement = document.createElement("P");
+        errorMessageElement.innerHTML = errorMessage;
+        errorMessageElement.classList.add('dt_error-message');
+        errorMessageElement.id = errorStringId;
+        cell.appendChild(errorMessageElement);
+    } else if (cell.classList.contains('dt_invalid-cell')) {
         // If the field entry is no longer invalid, change cell back to normal and remove error message
-        if (cell.classList.contains('dt_invalid-cell')) {
-            cell.classList.replace('dt_invalid-cell', 'dt_cell');
-            cell.removeChild(document.getElementById(errorStringId));
-        }
-
-        /**
-         * TODO: Fill out this placeholder to handle other callback return codes
-         */
-        switch (callbackCode) {
-            case 'placeholder':
-                break;
-            default:
-                break;
-        }
+        cell.classList.replace('dt_invalid-cell', 'dt_cell');
+        cell.removeChild(document.getElementById(errorStringId));
     }
 }
 
