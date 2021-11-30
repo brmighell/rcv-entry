@@ -252,8 +252,7 @@ function createRowHeaderCell(config, rowIndex) {
  * @param {string} text   - The button text
  * @returns {object}      - The button DOM element
  */
-function createLeftPanelButton(text)
-{
+function createLeftPanelButton(text) {
     let button = document.createElement("button");
     button.type = "button";
     button.classList.add("left-panel-button");

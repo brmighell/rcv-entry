@@ -379,8 +379,7 @@ describe('Interaction tests', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
 
         const elems = document.getElementsByTagName("button");
-        for (const elem of elems)
-        {
+        for (const elem of elems) {
             expect(elem.type).toEqual("button");
         }
     });
