@@ -15,16 +15,18 @@
     "url": "git+https://github.com/brmighell/rcv-entry.git"
   },
   "keywords": [
-    "range-slider",
-    "slider",
-    "timeline"
+    "data-table",
+    "data-entry",
+    "data",
+    "table",
+    "entry"
   ],
   "author": "rcv-entry",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/brmighell/rcv-entry/issues"
   },
-  "homepage": "https://artoonie.github.io/timeline-range-slider/",
+  "homepage": "https://brmighell.github.io/rcv-entry",
   "devDependencies": {
     "eslint": "^7.18.0",
     "eslint-plugin-jest": "^24.1.3",
