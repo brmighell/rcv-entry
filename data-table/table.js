@@ -248,6 +248,20 @@ function createRowHeaderCell(config, rowIndex) {
 }
 
 /**
+ * Helper function to create a nonsubmitting button, properly styled
+ * @param {string} text   - The button text
+ * @returns {object}      - The button DOM element
+ */
+function createLeftPanelButton(text)
+{
+    let button = document.createElement("button");
+    button.type = "button";
+    button.classList.add("left-panel-button");
+    button.innerHTML = text;
+    return button;
+}
+
+/**
  * Adds a single column to the table
  * @param {object} config     - Table configuration object
  * @param {String} [content]  - Content to place in the top cell of a column (uses default if
@@ -541,10 +555,8 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
 
     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-    let addButton = document.createElement("button");
-    addButton.classList.add("left-panel-button");
-    addButton.innerHTML = "+ Add " + leftPanelInfo.name.toLowerCase() +
-                          " to " + leftPanelInfo.endDirection;
+    let addButton = createLeftPanelButton("+ Add " + leftPanelInfo.name.toLowerCase() +
+                                          " to " + leftPanelInfo.endDirection);
     addButton.onclick = function () {
         leftPanelInfo.addEntryFunction(config);
     }
@@ -619,11 +631,8 @@ function createRowInputAndBtn(config) {
  * @returns {undefined}         - Doesn't return anything
  */
 function createDeleteBtn(config, buttonConfig) {
-    let deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.innerHTML = "Delete a " + buttonConfig.nameLowerCase +
-                          " from the " + buttonConfig.endDirection;
-    deleteBtn.classList.add("left-panel-button");
+    let deleteBtn = createLeftPanelButton("Delete a " + buttonConfig.nameLowerCase +
+                                          " from the " + buttonConfig.endDirection);
     deleteBtn.onclick = function () {
         buttonConfig.deleteFunction(config);
     }
