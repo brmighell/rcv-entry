@@ -343,18 +343,21 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         label.classList.add('dt_cell-label');
 
         let field = null;
+        let listener = null; // Each input type wants a different listener'focusout'; // usually we wan't a focusout, but not on dropdown
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('dt_cell-input');
             field = input;
+            listener = 'focusout';
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
             input.classList.add('dt_cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             field = input;
+            listener = 'change';
         } else if (type === Array) {
             let select = document.createElement("select");
             select.type = 'dropdown';
@@ -365,6 +368,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 select.appendChild(option);
             }
             field = select;
+            listener = 'change';
         } else {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
@@ -375,7 +379,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         field.id = constructInputFieldId(config.wrapperDivId, rowIndex, colIndex, fieldNum);
 
         if (cellFieldHasCallback(config, fieldNum)) {
-            field.addEventListener("focusout", function () {
+            field.addEventListener(listener, function () {
                 const fieldValue = getCellData(config, rowIndex, colIndex)[fieldName];
                 const errorMessage = config.datumConfig.callbacks[fieldNum](fieldValue, rowIndex-1, colIndex-1);
                 updateErrorMessage(config, cell, fieldNum, errorMessage);
