@@ -108,6 +108,31 @@ describe('basic tests to ensure the buttons can function well', () => {
         button.click();
         assertRowsColsEquals(2, 3);
     });
+
+    test('check that you can\'t delete all the rows', () => {
+        const button = document.getElementsByClassName("dt_left-panel-button")[3];
+        button.click();
+        assertRowsColsEquals(2, 3);
+        button.click();
+        assertRowsColsEquals(1, 3);
+
+        // Here, we get no change
+        button.click();
+        assertRowsColsEquals(1, 3);
+    });
+
+    test('check that you can\'t delete all the cols', () => {
+        const button = document.getElementsByClassName("dt_left-panel-button")[1];
+        button.click();
+        assertRowsColsEquals(3, 2);
+        button.click();
+        assertRowsColsEquals(3, 1);
+
+        // Here, we get no change
+        button.click();
+        assertRowsColsEquals(3, 1);
+    });
+
 });
 
 describe('ensure row and columns can be independently set to editable', () => {
@@ -242,13 +267,6 @@ function createSingleCellTable(names, types, values, callbacks) {
     });
 }
 
-function invalidIfNegative(value) {
-    if (value[0] < 0) {
-        return 'Invalid';
-    }
-    return null;
-}
-
 describe('API basic tests', () => {
     beforeEach(() => {
         table.createDataTable({
@@ -361,6 +379,22 @@ describe('API basic tests', () => {
 });
 
 describe('Interaction tests', () => {
+    /**
+     * "Callback" function to check if a value is negative
+     * @param {Number} value    - Value to be checked
+     * @param {Number} row      - Row index that has changed (0-indexed: doen't include header)
+     * @param {Number} col      - Column index that has changed (0-indexed: doen't include header)
+     * @returns {string}        - 'Invalid' if less than zero, null otherwise
+     */
+    function invalidIfNegative(value, row, col) {
+        expect(row).not.toBeLessThan(0);
+        expect(col).not.toBeLessThan(0);
+        if (value < 0) {
+            return 'Invalid';
+        }
+        return null;
+    }
+
     test('Invalid input to text input field updates cell appropriately', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
         expect(numErrorsVisible()).toEqual(0);
@@ -408,8 +442,29 @@ describe('Interaction tests', () => {
         expect(document.getElementsByClassName('dt_error-message')).toHaveLength(1);
     });
 
+    test('Callback has correctly 0-indexed row/col', () => {
+        const mockCallback = jest.fn(() => null);
+        createSingleCellTable(['Value'], [Number], [0], [mockCallback])
+
+        let input = document.getElementsByClassName('dt_cell-input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // The mock function is called once
+        expect(mockCallback.mock.calls.length).toBe(1);
+
+        // The first argument (the inputted value)
+        expect(mockCallback.mock.calls[0][0]).toBe(23);
+
+        // The second argument (the row)
+        expect(mockCallback.mock.calls[0][1]).toBe(0);
+
+        // The third argument (the col)
+        expect(mockCallback.mock.calls[0][2]).toBe(0);
+    });
+
     test('Ensure all buttons are non-submitting buttons', () => {
-        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+        createSingleCellTable();
 
         const elems = document.getElementsByTagName("button");
         for (const elem of elems) {
@@ -421,12 +476,14 @@ describe('Interaction tests', () => {
 describe('Test cell getters and setters', () => {
     beforeEach(() => {
         table.createDataTable({
-            'wrapperDivId': 'div-id'
+            'wrapperDivId': 'div-id',
+            'canEditColumnHeader': false,
+            'canEditRowHeader': false
         });
     });
 
     test('Can get simple data', () => {
-        expect(table.getCellData('div-id', 0, 0)).toEqual({'value': NaN, 'status': 'Active'});
+        expect(table.getCellData('div-id', 0, 0)).toEqual({'Value': NaN, 'Status': 'Active'});
     });
     test('Row too high throws error', () => {
         expect(() => table.getCellData('div-id', 3, 0)).toThrow();
@@ -445,5 +502,35 @@ describe('Test cell getters and setters', () => {
     });
     test('Can clear an error message (TODO: not yet implemented)', () => {
         expect(() => table.clearCellErrorMessage('div-id', 1, 0)).toThrow();
+    });
+    test('Can disable a field', () => {
+        const tags = document.getElementsByTagName('input');
+        expect(tags).toHaveLength(9); // one for each row and col; not the column header
+        const tag = tags[0];
+
+        // False to start with
+        expect(tag.disabled).toBeFalsy();
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeTruthy();
+
+        // And re-enable
+        table.enableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeFalsy();
+    });
+    test('Disabled fields return null, not the inputted value', () => {
+        const input = document.getElementsByTagName('input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // Returns 23 when enabled
+        expect(table.getCellData('div-id', 0, 0).Value).toEqual(23);
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+
+        // Now it returns null
+        expect(table.getCellData('div-id', 0, 0).Value).toBeNull();
     });
 });
