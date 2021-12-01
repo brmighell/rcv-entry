@@ -69,7 +69,7 @@ class Config {
             names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
-            callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, null] : clientConfig.callbacks
+            callbacks: clientConfig.callbacks === undefined ? [null, null] : clientConfig.callbacks
         }
 
         /**
@@ -79,22 +79,6 @@ class Config {
         this.currNumRows = 0;
         this.currNumColumns = 0;
     }
-}
-
-/**
- * FIXME: Remove this when done!
- * Test functions for callback functionality
- */
-/**
- * "Callback" function to check if a value is negative
- * @param {Number} value    - Value to be checked
- * @returns {string}        - 'Invalid' if less than zero, 'Okay' otherwise
- */
-function invalidIfNegative(value) {
-    if (value < 0) {
-        return 'Number cannot be negative';
-    }
-    return null;
 }
 
 /**
@@ -204,7 +188,7 @@ function createColumnHeader(config) {
     for (let colIndex = 0; colIndex < config.defaultNumColumns + 1; colIndex++) {
         // Create an entry cell
         let cell = row.insertCell(colIndex);
-        cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
+        cell.id = constructElementId(config.tableIds.theadElementId, 0, colIndex)
         cell.classList.add("dt_cell");
 
         cell.appendChild(createColumnHeaderCell(config, colIndex));
@@ -271,7 +255,7 @@ function addSingleColumn(config) {
     let numCols = config.currNumColumns;
 
     let cell = table.rows[0].insertCell(numCols);
-    cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
+    cell.id = constructElementId(config.tableIds.theadElementId, 0, numCols);
     cell.classList.add("dt_cell");
 
     cell.appendChild(createColumnHeaderCell(config, numCols));
@@ -332,7 +316,7 @@ function addSingleRow(config) {
 // eslint-disable-next-line max-params
 function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
-    cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.id = constructElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("dt_cell");
     cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
@@ -347,29 +331,33 @@ function createRowHeader(config, row, rowIndex, colIndex) {
  */
 function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
-    cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.id = constructElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("dt_cell");
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
+        let fieldName = config.datumConfig.names[fieldNum];
 
         let label = document.createElement("LABEL");
-        label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
+        label.innerHTML = fieldName + ": ";
         label.classList.add('dt_cell-label');
 
         let field = null;
+        let listener = null; // Each input type wants a different listener'focusout'; // usually we wan't a focusout, but not on dropdown
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('dt_cell-input');
             field = input;
+            listener = 'focusout';
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
             input.classList.add('dt_cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             field = input;
+            listener = 'change';
         } else if (type === Array) {
             let select = document.createElement("select");
             select.type = 'dropdown';
@@ -380,6 +368,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 select.appendChild(option);
             }
             field = select;
+            listener = 'change';
         } else {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
@@ -387,8 +376,14 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             throw String("Cell field datatype not supported.");
         }
 
+        field.id = constructInputFieldId(config.wrapperDivId, rowIndex, colIndex, fieldNum);
+
         if (cellFieldHasCallback(config, fieldNum)) {
-            createCallbackListener(config, cell, field, fieldNum)
+            field.addEventListener(listener, function () {
+                const fieldValue = getCellData(config, rowIndex, colIndex)[fieldName];
+                const errorMessage = config.datumConfig.callbacks[fieldNum](fieldValue, rowIndex-1, colIndex-1);
+                updateErrorMessage(config, cell, fieldNum, errorMessage);
+            })
         }
 
         label.appendChild(field);
@@ -407,46 +402,32 @@ function cellFieldHasCallback(config, fieldNum) {
 }
 
 /**
- * Creates a callback listener, distinguishing between the type of field to which the callback applies
- * @param {object} config                               - Table configuration object
- * @param {HTMLTableDataCellElement} cell               - Cell within the table
- * @param {HTMLInputElement|HTMLSelectElement} field    - The field to which the callback applies
- * @param {Number} fieldNum                             - Index of the field within the cell
- * @returns {undefined}                                 - Doesn't return anything
+ * Sets, updates, or clears the error message: helper for direct client function calls
+ * (rather than via callbacks)
+ *
+ * @param {object} config                   - Table configuration object
+ * @param {Number} rowIndex                 - The row index for a cell
+ * @param {Number} colIndex                 - The column index for a cell
+ * @param {Number} fieldNum                 - Index of the field within the cell
+ * @param {String} errorMessage             - Client's response to the field's value (null if no error)
+ * @returns {undefined}                     - Doesn't return anything
  */
-function createCallbackListener(config, cell, field, fieldNum) {
-
-    field.addEventListener("focusout", function () {
-        let fieldValue = null;
-
-        // Gets value of the field, depending on what type of field it is
-        if (field.type.toString() === 'text') {
-            fieldValue = [field.value.trim()]
-        } else if (field.type.toString() === 'checkbox') {
-            fieldValue = [field.checked]
-        } else if (field.type.toString() === 'dropdown') {
-            fieldValue = [field.value]
-        } else {
-            throw String('Field has no class');
-        }
-
-        let errorMessage = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
-        handleCallbackReturn(config, cell, fieldNum, errorMessage);
-    })
+// eslint-disable-next-line max-params
+function updateErrorMessageHelper(config, rowIndex, colIndex, fieldNum, errorMessage) {
+    const cellId = constructElementId(config.wrapperDivId, rowIndex, colIndex);
+    const cell = document.getElementById(cellId);
+    updateErrorMessage(config, cell, fieldNum, errorMessage);
 }
 
 /**
- * Translates the return value of a callback to function calls
+ * Sets, updates, or clears the error message: helper for direct client function calls
  * @param {object} config                   - Table configuration object
  * @param {HTMLTableDataCellElement} cell   - Cell within the table
  * @param {Number} fieldNum                 - Index of the field within the cell
  * @param {String} errorMessage             - Client's response to the field's value (null if no error)
  * @returns {undefined}                     - Doesn't return anything
  */
-function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
-    /**
-     * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
-     */
+function updateErrorMessage(config, cell, fieldNum, errorMessage) {
     let errorStringId = cell.id + fieldNum + '_error_';
 
     if (errorMessage !== null && errorMessage !== undefined) {
@@ -456,12 +437,19 @@ function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
          */
         cell.classList.replace('dt_cell', 'dt_invalid-cell');
 
-        // And then adds an error message to the bottom of the cell
-        let errorMessageElement = document.createElement("P");
+        // Try to find the existing error message to update
+        let errorMessageElement = document.getElementById(errorStringId);
+
+        // Create error message if it doesn't exist
+        if (errorMessageElement === null) {
+            errorMessageElement = document.createElement("P");
+            errorMessageElement.classList.add('dt_error-message');
+            errorMessageElement.id = errorStringId;
+            cell.appendChild(errorMessageElement);
+        }
+
+        // Update the text
         errorMessageElement.innerHTML = errorMessage;
-        errorMessageElement.classList.add('dt_error-message');
-        errorMessageElement.id = errorStringId;
-        cell.appendChild(errorMessageElement);
     } else if (cell.classList.contains('dt_invalid-cell')) {
         // If the field entry is no longer invalid, change cell back to normal and remove error message
         cell.classList.replace('dt_invalid-cell', 'dt_cell');
@@ -506,14 +494,26 @@ function deleteSingleRow(config) {
 }
 
 /**
- * Creates a magic string for a cell
+ * Creates a magic string to be the cell ID
  * @param {object} wrapperDivId - ID for the wrapper
  * @param {Number} rowIndex     - The row index for a cell
  * @param {Number} colIndex     - The column index for a cell
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
-function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
+function constructElementId(wrapperDivId, rowIndex, colIndex) {
     return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_";
+}
+
+/**
+ * Creates a magic string to be the field input ID
+ * @param {object} wrapperDivId - ID for the wrapper
+ * @param {Number} rowIndex     - The row index for a cell
+ * @param {Number} colIndex     - The column index for a cell
+ * @param {Number} fieldIndex   - The index of the field
+ * @returns {string}            - Returns a magic string unique to a field input within a cell, based on location
+ */
+function constructInputFieldId(wrapperDivId, rowIndex, colIndex, fieldIndex) {
+    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_and_field_" + fieldIndex + "_";
 }
 
 /**
@@ -685,7 +685,7 @@ function getCellElement(config, row, column) {
     if (column < 1 || column >= config.currNumColumns) {
         throw new Error("Invalid column number");
     }
-    return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
+    return document.getElementById(constructElementId(config.wrapperDivId, row, column))
 }
 
 /**
@@ -729,34 +729,42 @@ function getCellData(config, row, col) {
     let cell = getCellElement(config, row, col);
 
     /*
-    Assumes that each cell has only field labels as children
+    Assumes that all labels under this child are, in order, the labels we created for the data types
      */
-    cell.childNodes.forEach(function (label, index) {
+    const labels = cell.getElementsByTagName("label");
+    for (let index = 0; index < labels.length; ++index) {
         /*
         Assumes that each label has two children. The first is
         text containing the label's name and the second is the
         space the user can interact with.
          */
+        const label = labels[index];
+        const node = label.childNodes[1];
+
         let value = null;
-        switch (config.datumConfig.types[index]) {
+        const type = config.datumConfig.types[index];
+        switch (type) {
             case Number:
-                value = parseInt(label.childNodes[1].value, 10);
+                value = parseInt(node.value, 10);
                 break;
             case Boolean:
-                value = label.childNodes[1].checked;
+                value = node.checked;
                 break;
             case String:
             case Array:
-                value = label.childNodes[1].value;
+                value = node.value;
                 break;
             default:
-                throw String("Label " + label.innerHTML + " does not have a supported field.");
+                throw String("Label " + label.innerHTML + " does not have a supported field: " + type);
         }
-        /**
-         * FIXME: How do we want cell properties to be named? Do we care about lowercase?
-         */
-        cellData[config.datumConfig.names[index].toLowerCase()] = value;
-    })
+
+        if (node.disabled) {
+            // Disabled nodes should not return a value
+            value = null;
+        }
+
+        cellData[config.datumConfig.names[index]] = value;
+    }
     return cellData;
 }
 
@@ -799,26 +807,58 @@ function dtGetCellData(wrapperDivId, row, col) {
 /**
  * Function available to client in order to mark an arbitrary cell as having invalid data
  * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
- * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
- * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} row          - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} col          - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} fieldIndex   - the index of the field that the error message is regarding
  * @param {string} message      - the error message to display
  * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars
-function dtSetCellErrorMessage(wrapperDivId, row, col, message) {
-    throw new Error("Not implemented yet");
+// eslint-disable-next-line max-params
+function dtSetCellErrorMessage(wrapperDivId, row, col, fieldIndex, message) {
+    let config = configDict[wrapperDivId];
+    updateErrorMessageHelper(config, row+1, col+1, fieldIndex, message);
 }
 
 /**
  * Function available to client in order to clear an arbitrary cell's error message
  * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
- * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
- * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} row          - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} col          - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} fieldIndex   - the index of the field that the error message is regarding
  * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars
-function dtClearCellErrorMessage(wrapperDivId, row, col) {
-    throw new Error("Not implemented yet");
+function dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex) {
+    let config = configDict[wrapperDivId];
+    updateErrorMessageHelper(config, row+1, col+1, fieldIndex, null);
+}
+
+/**
+ * Function available to client in order to disable an arbitrary field
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} fieldIndex      - the field index of the cell
+ * @returns {undefined}         - Doesn't return anything
+ */
+function dtDisableField(wrapperDivId, row, col, fieldIndex) {
+    const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
+    document.getElementById(fieldId).disabled = true;
+
+    // Disabled fields can't have errors
+    dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex);
+}
+
+/**
+ * Undoes dtDisableField
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} fieldIndex      - the field index of the cell
+ * @returns {undefined}         - Doesn't return anything
+ */
+function dtEnableField(wrapperDivId, row, col, fieldIndex) {
+    const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
+    document.getElementById(fieldId).disabled = false;
 }
 
 /**
@@ -917,6 +957,8 @@ if (typeof exports !== typeof undefined) {
     exports.getNumRows = dtGetNumRows;
     exports.getNumColumns = dtGetNumColumns;
     exports.setCellErrorMessage = dtSetCellErrorMessage;
+    exports.disableField = dtDisableField;
+    exports.enableField = dtEnableField;
     exports.clearCellErrorMessage = dtClearCellErrorMessage;
     exports.toJSON = dtToJSON;
 }

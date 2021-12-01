@@ -252,7 +252,7 @@ function cellFieldList(className) {
 }
 
 function numErrorsVisible() {
-    return document.getElementsByClassName('invalid-cell').length;
+    return document.getElementsByClassName('dt_invalid-cell').length;
 }
 
 function createSingleCellTable(names, types, values, callbacks) {
@@ -265,13 +265,6 @@ function createSingleCellTable(names, types, values, callbacks) {
         values,
         callbacks
     });
-}
-
-function invalidIfNegative(value) {
-    if (value[0] < 0) {
-        return 'Invalid';
-    }
-    return null;
 }
 
 describe('API basic tests', () => {
@@ -394,6 +387,22 @@ function getNumColumns() {
 }
 
 describe('Interaction tests', () => {
+    /**
+     * "Callback" function to check if a value is negative
+     * @param {Number} value    - Value to be checked
+     * @param {Number} row      - Row index that has changed (0-indexed: doen't include header)
+     * @param {Number} col      - Column index that has changed (0-indexed: doen't include header)
+     * @returns {string}        - 'Invalid' if less than zero, null otherwise
+     */
+    function invalidIfNegative(value, row, col) {
+        expect(row).not.toBeLessThan(0);
+        expect(col).not.toBeLessThan(0);
+        if (value < 0) {
+            return 'Invalid';
+        }
+        return null;
+    }
+
     test('Invalid input to text input field updates cell appropriately', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
         expect(numErrorsVisible()).toEqual(0);
@@ -402,7 +411,7 @@ describe('Interaction tests', () => {
         input.value = -23;
         input.dispatchEvent(new Event('focusout'));
 
-        expect(document.getElementsByClassName('dt_invalid-cell').length).toEqual(1);
+        expect(numErrorsVisible()).toEqual(1);
     });
 
     test('Valid input to text input field updates cell appropriately', () => {
@@ -417,8 +426,53 @@ describe('Interaction tests', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 
-    test('Ensure all buttons are non-submitting buttons', () => {
+    test('Allow multiple error messages per cell, one per field', () => {
+        createSingleCellTable(['Value0', 'Value1'], [Number, Number], [0, 0], [invalidIfNegative, invalidIfNegative])
+
+        let input0 = document.getElementsByClassName('dt_cell-input')[0];
+        let input1 = document.getElementsByClassName('dt_cell-input')[1];
+        input0.value = -23;
+        input0.dispatchEvent(new Event('focusout'));
+        input1.value = -23;
+        input1.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('dt_error-message')).toHaveLength(2);
+    });
+
+    test('Regression test: only one error message per field', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+
+        let input = document.getElementsByClassName('dt_cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('dt_error-message')).toHaveLength(1);
+    });
+
+    test('Callback has correctly 0-indexed row/col', () => {
+        const mockCallback = jest.fn(() => null);
+        createSingleCellTable(['Value'], [Number], [0], [mockCallback])
+
+        let input = document.getElementsByClassName('dt_cell-input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // The mock function is called once
+        expect(mockCallback.mock.calls.length).toBe(1);
+
+        // The first argument (the inputted value)
+        expect(mockCallback.mock.calls[0][0]).toBe(23);
+
+        // The second argument (the row)
+        expect(mockCallback.mock.calls[0][1]).toBe(0);
+
+        // The third argument (the col)
+        expect(mockCallback.mock.calls[0][2]).toBe(0);
+    });
+
+    test('Ensure all buttons are non-submitting buttons', () => {
+        createSingleCellTable();
 
         const elems = document.getElementsByTagName("button");
         for (const elem of elems) {
@@ -430,12 +484,14 @@ describe('Interaction tests', () => {
 describe('Test cell getters and setters', () => {
     beforeEach(() => {
         table.createDataTable({
-            'wrapperDivId': 'div-id'
+            'wrapperDivId': 'div-id',
+            'canEditColumnHeader': false,
+            'canEditRowHeader': false
         });
     });
 
     test('Can get simple data', () => {
-        expect(table.getCellData('div-id', 0, 0)).toEqual({'value': NaN, 'status': 'Active'});
+        expect(table.getCellData('div-id', 0, 0)).toEqual({'Value': NaN, 'Status': 'Active'});
     });
     test('Row too high throws error', () => {
         expect(() => table.getCellData('div-id', 3, 0)).toThrow();
@@ -449,10 +505,57 @@ describe('Test cell getters and setters', () => {
     test('Row too low throws error', () => {
         expect(() => table.getCellData('div-id', -1, 0)).toThrow();
     });
-    test('Can set an error message (TODO: not yet implemented)', () => {
-        expect(() => table.setCellErrorMessage('div-id', 1, 0, "test error")).toThrow();
+    test('Can set and clear an error message', () => {
+        table.setCellErrorMessage('div-id', 0, 0, 0, "test error");
+        expect(numErrorsVisible()).toEqual(1);
+
+        table.clearCellErrorMessage('div-id', 0, 0, 0);
+        expect(numErrorsVisible()).toEqual(0);
     });
-    test('Can clear an error message (TODO: not yet implemented)', () => {
-        expect(() => table.clearCellErrorMessage('div-id', 1, 0)).toThrow();
+    test('Can set multiple error message', () => {
+        table.setCellErrorMessage('div-id', 0, 0, 0, "test error");
+        table.setCellErrorMessage('div-id', 1, 0, 0, "test error");
+        expect(numErrorsVisible()).toEqual(2);
+    });
+    test('Can disable a field', () => {
+        const tags = document.getElementsByTagName('input');
+        expect(tags).toHaveLength(9); // one for each row and col; not the column header
+        const tag = tags[0];
+
+        // False to start with
+        expect(tag.disabled).toBeFalsy();
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeTruthy();
+
+        // And re-enable
+        table.enableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeFalsy();
+    });
+    test('Disabled fields return null, not the inputted value', () => {
+        const input = document.getElementsByTagName('input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // Returns 23 when enabled
+        expect(table.getCellData('div-id', 0, 0).Value).toEqual(23);
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+
+        // Now it returns null
+        expect(table.getCellData('div-id', 0, 0).Value).toBeNull();
+    });
+    test('Disabling a field clears any errors', () => {
+        // Set the error
+        table.setCellErrorMessage('div-id', 0, 0, 0, "err");
+        expect(numErrorsVisible()).toEqual(1);
+
+        // Disable the field
+        table.disableField('div-id', 0, 0, 0);
+
+        // Which clears the error
+        expect(numErrorsVisible()).toEqual(0);
     });
 });
