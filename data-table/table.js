@@ -837,6 +837,9 @@ function dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex) {
 function dtDisableField(wrapperDivId, row, col, fieldIndex) {
     const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
     document.getElementById(fieldId).disabled = true;
+
+    // Disabled fields can't have errors
+    dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex);
 }
 
 /**

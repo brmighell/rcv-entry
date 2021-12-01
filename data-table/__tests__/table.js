@@ -539,4 +539,15 @@ describe('Test cell getters and setters', () => {
         // Now it returns null
         expect(table.getCellData('div-id', 0, 0).Value).toBeNull();
     });
+    test('Disabling a field clears any errors', () => {
+        // Set the error
+        table.setCellErrorMessage('div-id', 0, 0, 0, "err");
+        expect(numErrorsVisible()).toEqual(1);
+
+        // Disable the field
+        table.disableField('div-id', 0, 0, 0);
+
+        // Which clears the error
+        expect(numErrorsVisible()).toEqual(0);
+    });
 });
