@@ -252,7 +252,7 @@ function cellFieldList(className) {
 }
 
 function numErrorsVisible() {
-    return document.getElementsByClassName('invalid-cell').length;
+    return document.getElementsByClassName('dt_invalid-cell').length;
 }
 
 function createSingleCellTable(names, types, values, callbacks) {
@@ -403,7 +403,7 @@ describe('Interaction tests', () => {
         input.value = -23;
         input.dispatchEvent(new Event('focusout'));
 
-        expect(document.getElementsByClassName('dt_invalid-cell').length).toEqual(1);
+        expect(numErrorsVisible()).toEqual(1);
     });
 
     test('Valid input to text input field updates cell appropriately', () => {
@@ -497,11 +497,17 @@ describe('Test cell getters and setters', () => {
     test('Row too low throws error', () => {
         expect(() => table.getCellData('div-id', -1, 0)).toThrow();
     });
-    test('Can set an error message (TODO: not yet implemented)', () => {
-        expect(() => table.setCellErrorMessage('div-id', 1, 0, "test error")).toThrow();
+    test('Can set and clear an error message', () => {
+        table.setCellErrorMessage('div-id', 0, 0, 0, "test error");
+        expect(numErrorsVisible()).toEqual(1);
+
+        table.clearCellErrorMessage('div-id', 0, 0, 0);
+        expect(numErrorsVisible()).toEqual(0);
     });
-    test('Can clear an error message (TODO: not yet implemented)', () => {
-        expect(() => table.clearCellErrorMessage('div-id', 1, 0)).toThrow();
+    test('Can set multiple error message', () => {
+        table.setCellErrorMessage('div-id', 0, 0, 0, "test error");
+        table.setCellErrorMessage('div-id', 1, 0, 0, "test error");
+        expect(numErrorsVisible()).toEqual(2);
     });
     test('Can disable a field', () => {
         const tags = document.getElementsByTagName('input');
@@ -532,5 +538,16 @@ describe('Test cell getters and setters', () => {
 
         // Now it returns null
         expect(table.getCellData('div-id', 0, 0).Value).toBeNull();
+    });
+    test('Disabling a field clears any errors', () => {
+        // Set the error
+        table.setCellErrorMessage('div-id', 0, 0, 0, "err");
+        expect(numErrorsVisible()).toEqual(1);
+
+        // Disable the field
+        table.disableField('div-id', 0, 0, 0);
+
+        // Which clears the error
+        expect(numErrorsVisible()).toEqual(0);
     });
 });

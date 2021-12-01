@@ -343,18 +343,21 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         label.classList.add('dt_cell-label');
 
         let field = null;
+        let listener = null; // Each input type wants a different listener'focusout'; // usually we wan't a focusout, but not on dropdown
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('dt_cell-input');
             field = input;
+            listener = 'focusout';
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
             input.classList.add('dt_cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             field = input;
+            listener = 'change';
         } else if (type === Array) {
             let select = document.createElement("select");
             select.type = 'dropdown';
@@ -365,6 +368,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
                 select.appendChild(option);
             }
             field = select;
+            listener = 'change';
         } else {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
@@ -375,10 +379,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         field.id = constructInputFieldId(config.wrapperDivId, rowIndex, colIndex, fieldNum);
 
         if (cellFieldHasCallback(config, fieldNum)) {
-            field.addEventListener("focusout", function () {
+            field.addEventListener(listener, function () {
                 const fieldValue = getCellData(config, rowIndex, colIndex)[fieldName];
                 const errorMessage = config.datumConfig.callbacks[fieldNum](fieldValue, rowIndex-1, colIndex-1);
-                handleCallbackReturn(config, cell, fieldNum, errorMessage);
+                updateErrorMessage(config, cell, fieldNum, errorMessage);
             })
         }
 
@@ -398,14 +402,32 @@ function cellFieldHasCallback(config, fieldNum) {
 }
 
 /**
- * Translates the return value of a callback to function calls
+ * Sets, updates, or clears the error message: helper for direct client function calls
+ * (rather than via callbacks)
+ *
+ * @param {object} config                   - Table configuration object
+ * @param {Number} rowIndex                 - The row index for a cell
+ * @param {Number} colIndex                 - The column index for a cell
+ * @param {Number} fieldNum                 - Index of the field within the cell
+ * @param {String} errorMessage             - Client's response to the field's value (null if no error)
+ * @returns {undefined}                     - Doesn't return anything
+ */
+// eslint-disable-next-line max-params
+function updateErrorMessageHelper(config, rowIndex, colIndex, fieldNum, errorMessage) {
+    const cellId = constructElementId(config.wrapperDivId, rowIndex, colIndex);
+    const cell = document.getElementById(cellId);
+    updateErrorMessage(config, cell, fieldNum, errorMessage);
+}
+
+/**
+ * Sets, updates, or clears the error message: helper for direct client function calls
  * @param {object} config                   - Table configuration object
  * @param {HTMLTableDataCellElement} cell   - Cell within the table
  * @param {Number} fieldNum                 - Index of the field within the cell
  * @param {String} errorMessage             - Client's response to the field's value (null if no error)
  * @returns {undefined}                     - Doesn't return anything
  */
-function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
+function updateErrorMessage(config, cell, fieldNum, errorMessage) {
     let errorStringId = cell.id + fieldNum + '_error_';
 
     if (errorMessage !== null && errorMessage !== undefined) {
@@ -779,26 +801,29 @@ function dtGetCellData(wrapperDivId, row, col) {
 /**
  * Function available to client in order to mark an arbitrary cell as having invalid data
  * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
- * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
- * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} row          - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} col          - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} fieldIndex   - the index of the field that the error message is regarding
  * @param {string} message      - the error message to display
  * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars
-function dtSetCellErrorMessage(wrapperDivId, row, col, message) {
-    throw new Error("Not implemented yet");
+// eslint-disable-next-line max-params
+function dtSetCellErrorMessage(wrapperDivId, row, col, fieldIndex, message) {
+    let config = configDict[wrapperDivId];
+    updateErrorMessageHelper(config, row+1, col+1, fieldIndex, message);
 }
 
 /**
  * Function available to client in order to clear an arbitrary cell's error message
  * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
- * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
- * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} row          - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} col          - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {Number} fieldIndex   - the index of the field that the error message is regarding
  * @returns {undefined}         - Doesn't return anything
  */
-// eslint-disable-next-line no-unused-vars
-function dtClearCellErrorMessage(wrapperDivId, row, col) {
-    throw new Error("Not implemented yet");
+function dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex) {
+    let config = configDict[wrapperDivId];
+    updateErrorMessageHelper(config, row+1, col+1, fieldIndex, null);
 }
 
 /**
@@ -812,6 +837,9 @@ function dtClearCellErrorMessage(wrapperDivId, row, col) {
 function dtDisableField(wrapperDivId, row, col, fieldIndex) {
     const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
     document.getElementById(fieldId).disabled = true;
+
+    // Disabled fields can't have errors
+    dtClearCellErrorMessage(wrapperDivId, row, col, fieldIndex);
 }
 
 /**
