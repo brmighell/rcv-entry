@@ -452,7 +452,9 @@ describe('Interaction tests', () => {
 describe('Test cell getters and setters', () => {
     beforeEach(() => {
         table.createDataTable({
-            'wrapperDivId': 'div-id'
+            'wrapperDivId': 'div-id',
+            'canEditColumnHeader': false,
+            'canEditRowHeader': false
         });
     });
 
@@ -476,5 +478,35 @@ describe('Test cell getters and setters', () => {
     });
     test('Can clear an error message (TODO: not yet implemented)', () => {
         expect(() => table.clearCellErrorMessage('div-id', 1, 0)).toThrow();
+    });
+    test('Can disable a field', () => {
+        const tags = document.getElementsByTagName('input');
+        expect(tags).toHaveLength(9); // one for each row and col; not the column header
+        const tag = tags[0];
+
+        // False to start with
+        expect(tag.disabled).toBeFalsy();
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeTruthy();
+
+        // And re-enable
+        table.enableField('div-id', 0, 0, 0);
+        expect(tag.disabled).toBeFalsy();
+    });
+    test('Disabled fields return null, not the inputted value', () => {
+        const input = document.getElementsByTagName('input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // Returns 23 when enabled
+        expect(table.getCellData('div-id', 0, 0).Value).toEqual(23);
+
+        // Then disable it
+        table.disableField('div-id', 0, 0, 0);
+
+        // Now it returns null
+        expect(table.getCellData('div-id', 0, 0).Value).toBeNull();
     });
 });

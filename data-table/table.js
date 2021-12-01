@@ -188,7 +188,7 @@ function createColumnHeader(config) {
     for (let colIndex = 0; colIndex < config.defaultNumColumns + 1; colIndex++) {
         // Create an entry cell
         let cell = row.insertCell(colIndex);
-        cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
+        cell.id = constructElementId(config.tableIds.theadElementId, 0, colIndex)
         cell.classList.add("dt_cell");
 
         cell.appendChild(createColumnHeaderCell(config, colIndex));
@@ -255,7 +255,7 @@ function addSingleColumn(config) {
     let numCols = config.currNumColumns;
 
     let cell = table.rows[0].insertCell(numCols);
-    cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
+    cell.id = constructElementId(config.tableIds.theadElementId, 0, numCols);
     cell.classList.add("dt_cell");
 
     cell.appendChild(createColumnHeaderCell(config, numCols));
@@ -316,7 +316,7 @@ function addSingleRow(config) {
 // eslint-disable-next-line max-params
 function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
-    cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.id = constructElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("dt_cell");
     cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
@@ -331,7 +331,7 @@ function createRowHeader(config, row, rowIndex, colIndex) {
  */
 function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
-    cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
+    cell.id = constructElementId(config.wrapperDivId, rowIndex, colIndex)
     cell.classList.add("dt_cell");
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
@@ -371,6 +371,8 @@ function createEntryCell(config, row, rowIndex, colIndex) {
              */
             throw String("Cell field datatype not supported.");
         }
+
+        field.id = constructInputFieldId(config.wrapperDivId, rowIndex, colIndex, fieldNum);
 
         if (cellFieldHasCallback(config, fieldNum)) {
             field.addEventListener("focusout", function () {
@@ -466,14 +468,26 @@ function deleteSingleRow(config) {
 }
 
 /**
- * Creates a magic string for a cell
+ * Creates a magic string to be the cell ID
  * @param {object} wrapperDivId - ID for the wrapper
  * @param {Number} rowIndex     - The row index for a cell
  * @param {Number} colIndex     - The column index for a cell
  * @returns {string}            - Returns a magic string unique to a cell, based on location
  */
-function cellIndexToElementId(wrapperDivId, rowIndex, colIndex) {
+function constructElementId(wrapperDivId, rowIndex, colIndex) {
     return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_";
+}
+
+/**
+ * Creates a magic string to be the field input ID
+ * @param {object} wrapperDivId - ID for the wrapper
+ * @param {Number} rowIndex     - The row index for a cell
+ * @param {Number} colIndex     - The column index for a cell
+ * @param {Number} fieldIndex   - The index of the field
+ * @returns {string}            - Returns a magic string unique to a field input within a cell, based on location
+ */
+function constructInputFieldId(wrapperDivId, rowIndex, colIndex, fieldIndex) {
+    return wrapperDivId + "_row_" + rowIndex + "_and_col_" + colIndex + "_and_field_" + fieldIndex + "_";
 }
 
 /**
@@ -641,7 +655,7 @@ function getCellElement(config, row, column) {
     if (column < 1 || column >= config.currNumColumns) {
         throw new Error("Invalid column number");
     }
-    return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
+    return document.getElementById(constructElementId(config.wrapperDivId, row, column))
 }
 
 /**
@@ -693,21 +707,28 @@ function getCellData(config, row, col) {
         space the user can interact with.
          */
         const label = labels[index];
+        const node = label.childNodes[1];
+
         let value = null;
         const type = config.datumConfig.types[index];
         switch (type) {
             case Number:
-                value = parseInt(label.childNodes[1].value, 10);
+                value = parseInt(node.value, 10);
                 break;
             case Boolean:
-                value = label.childNodes[1].checked;
+                value = node.checked;
                 break;
             case String:
             case Array:
-                value = label.childNodes[1].value;
+                value = node.value;
                 break;
             default:
                 throw String("Label " + label.innerHTML + " does not have a supported field: " + type);
+        }
+
+        if (node.disabled) {
+            // Disabled nodes should not return a value
+            value = null;
         }
 
         cellData[config.datumConfig.names[index]] = value;
@@ -774,6 +795,32 @@ function dtSetCellErrorMessage(wrapperDivId, row, col, message) {
 // eslint-disable-next-line no-unused-vars
 function dtClearCellErrorMessage(wrapperDivId, row, col) {
     throw new Error("Not implemented yet");
+}
+
+/**
+ * Function available to client in order to disable an arbitrary field
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} fieldIndex      - the field index of the cell
+ * @returns {undefined}         - Doesn't return anything
+ */
+function dtDisableField(wrapperDivId, row, col, fieldIndex) {
+    const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
+    document.getElementById(fieldId).disabled = true;
+}
+
+/**
+ * Undoes dtDisableField
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} fieldIndex      - the field index of the cell
+ * @returns {undefined}         - Doesn't return anything
+ */
+function dtEnableField(wrapperDivId, row, col, fieldIndex) {
+    const fieldId = constructInputFieldId(wrapperDivId, row+1, col+1, fieldIndex);
+    document.getElementById(fieldId).disabled = false;
 }
 
 /**
@@ -872,6 +919,8 @@ if (typeof exports !== typeof undefined) {
     exports.getNumRows = dtGetNumRows;
     exports.getNumColumns = dtGetNumColumns;
     exports.setCellErrorMessage = dtSetCellErrorMessage;
+    exports.disableField = dtDisableField;
+    exports.enableField = dtEnableField;
     exports.clearCellErrorMessage = dtClearCellErrorMessage;
     exports.toJSON = dtToJSON;
 }
