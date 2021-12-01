@@ -92,9 +92,9 @@ class Config {
  */
 function invalidIfNegative(value) {
     if (value < 0) {
-        return 'Invalid';
+        return 'Number cannot be negative';
     }
-    return 'Okay';
+    return null;
 }
 
 /**
@@ -156,15 +156,13 @@ function validateConfig(config) {
  * @returns {undefined}     - Doesn't return anything
  */
 function createSubDivs(config) {
-    let subDivClass = "SubDiv";
-
     let entryBoxDiv = document.createElement("div");
     entryBoxDiv.id = config.entryIds.entryBoxDivId;
-    entryBoxDiv.classList.add(subDivClass);
+    entryBoxDiv.classList.add("dt_left-panel");
 
     let tableDiv = document.createElement("div");
     tableDiv.id = config.tableIds.tableDivId;
-    tableDiv.classList.add(subDivClass);
+    entryBoxDiv.classList.add("dt_right-panel");
 
     document.getElementById(config.wrapperDivId).appendChild(entryBoxDiv);
     document.getElementById(config.wrapperDivId).appendChild(tableDiv);
@@ -178,7 +176,7 @@ function createSubDivs(config) {
 function createTable(config) {
     let table = document.createElement("table");
     table.id = config.tableIds.tableElementId;
-    table.classList.add("data-table");
+    table.classList.add("dt_inner-table");
 
     let thead = document.createElement("thead");
     thead.id = config.tableIds.theadElementId;
@@ -207,7 +205,7 @@ function createColumnHeader(config) {
         // Create an entry cell
         let cell = row.insertCell(colIndex);
         cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, colIndex)
-        cell.classList.add("data-table-cell");
+        cell.classList.add("dt_cell");
 
         cell.appendChild(createColumnHeaderCell(config, colIndex));
     }
@@ -229,7 +227,7 @@ function createColumnHeaderCell(config, colIndex) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = config.columnsName;
-    input.classList.add('table-entry-field');
+    input.classList.add('dt_table-entry-field');
     return input;
 }
 
@@ -243,8 +241,21 @@ function createRowHeaderCell(config, rowIndex) {
     let input = document.createElement("INPUT");
     input.type = 'text';
     input.placeholder = config.rowsName;
-    input.classList.add('table-entry-field');
+    input.classList.add('dt_table-entry-field');
     return input;
+}
+
+/**
+ * Helper function to create a nonsubmitting button, properly styled
+ * @param {string} text   - The button text
+ * @returns {object}      - The button DOM element
+ */
+function createLeftPanelButton(text) {
+    let button = document.createElement("button");
+    button.type = "button";
+    button.classList.add("dt_left-panel-button");
+    button.innerHTML = text;
+    return button;
 }
 
 /**
@@ -261,7 +272,7 @@ function addSingleColumn(config) {
 
     let cell = table.rows[0].insertCell(numCols);
     cell.id = cellIndexToElementId(config.tableIds.theadElementId, 0, numCols);
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
 
     cell.appendChild(createColumnHeaderCell(config, numCols));
 
@@ -316,7 +327,7 @@ function addSingleRow(config) {
 function createRowHeader(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
     cell.appendChild(createRowHeaderCell(config, rowIndex));
 }
 
@@ -331,32 +342,32 @@ function createRowHeader(config, row, rowIndex, colIndex) {
 function createEntryCell(config, row, rowIndex, colIndex) {
     let cell = row.insertCell(colIndex);
     cell.id = cellIndexToElementId(config.wrapperDivId, rowIndex, colIndex)
-    cell.classList.add("data-table-cell");
+    cell.classList.add("dt_cell");
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
 
         let label = document.createElement("LABEL");
         label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
-        label.classList.add('cell-label');
+        label.classList.add('dt_cell-label');
 
         let field = null;
         if (type === Number || type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
             input.placeholder = config.datumConfig.values[fieldNum];
-            input.classList.add('cell-input');
+            input.classList.add('dt_cell-input');
             field = input;
         } else if (type === Boolean) {
             let input = document.createElement("INPUT");
             input.type = 'checkbox';
-            input.classList.add('cell-checkbox');
+            input.classList.add('dt_cell-checkbox');
             input.defaultChecked = config.datumConfig.values[fieldNum];
             field = input;
         } else if (type === Array) {
             let select = document.createElement("select");
             select.type = 'dropdown';
-            select.classList.add('cell-dropdown');
+            select.classList.add('dt_cell-dropdown');
             for (let i = 0; i < config.datumConfig.values[fieldNum].length; i++) {
                 let option = document.createElement("option");
                 option.innerHTML = config.datumConfig.values[fieldNum][i];
@@ -413,8 +424,8 @@ function createCallbackListener(config, cell, field, fieldNum) {
             throw String('Field has no class');
         }
 
-        let callbackCode = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
-        handleCallbackReturn(config, cell, fieldNum, callbackCode);
+        let errorMessage = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
+        handleCallbackReturn(config, cell, fieldNum, errorMessage);
     })
 }
 
@@ -423,47 +434,32 @@ function createCallbackListener(config, cell, field, fieldNum) {
  * @param {object} config                   - Table configuration object
  * @param {HTMLTableDataCellElement} cell   - Cell within the table
  * @param {Number} fieldNum                 - Index of the field within the cell
- * @param {String} callbackCode             - Client's response to the field's value
+ * @param {String} errorMessage             - Client's response to the field's value (null if no error)
  * @returns {undefined}                     - Doesn't return anything
  */
-function handleCallbackReturn(config, cell, fieldNum, callbackCode) {
+function handleCallbackReturn(config, cell, fieldNum, errorMessage) {
     /**
      * FIXME: Maybe we should be accepting an array of return "codes" to support multiple function calls?
      */
     let errorStringId = cell.id + fieldNum + '_error_';
 
-    /**
-     * FIXME: How can we improve callback code strings?
-     */
-    if (callbackCode === 'Invalid') {
+    if (errorMessage !== null && errorMessage !== undefined) {
         // Turns the cell red
         /**
          * FIXME: Instead of replacing this, have the invalid style be toggleable
          */
-        cell.classList.replace('data-table-cell', 'invalid-cell');
+        cell.classList.replace('dt_cell', 'dt_invalid-cell');
 
         // And then adds an error message to the bottom of the cell
-        let errorMessage = document.createElement("P");
-        errorMessage.innerHTML = ("Invalid " + config.datumConfig.names[fieldNum].toLowerCase());
-        errorMessage.classList.add('error-message');
-        errorMessage.id = errorStringId;
-        cell.appendChild(errorMessage);
-    } else {
+        let errorMessageElement = document.createElement("P");
+        errorMessageElement.innerHTML = errorMessage;
+        errorMessageElement.classList.add('dt_error-message');
+        errorMessageElement.id = errorStringId;
+        cell.appendChild(errorMessageElement);
+    } else if (cell.classList.contains('dt_invalid-cell')) {
         // If the field entry is no longer invalid, change cell back to normal and remove error message
-        if (cell.classList.contains('invalid-cell')) {
-            cell.classList.replace('invalid-cell', 'data-table-cell');
-            cell.removeChild(document.getElementById(errorStringId));
-        }
-
-        /**
-         * TODO: Fill out this placeholder to handle other callback return codes
-         */
-        switch (callbackCode) {
-            case 'placeholder':
-                break;
-            default:
-                break;
-        }
+        cell.classList.replace('dt_invalid-cell', 'dt_cell');
+        cell.removeChild(document.getElementById(errorStringId));
     }
 }
 
@@ -541,10 +537,8 @@ function createRowOrColumnInputAndBtn(config, leftPanelInfo) {
     let entryBoxDiv = document.getElementById(config.entryIds.entryBoxDivId);
 
     // Creates the button that will take the user input and send it to addSingleColumn() when clicked
-    let addButton = document.createElement("button");
-    addButton.classList.add("left-panel-button");
-    addButton.innerHTML = "+ Add " + leftPanelInfo.name.toLowerCase() +
-                          " to " + leftPanelInfo.endDirection;
+    let addButton = createLeftPanelButton("+ Add " + leftPanelInfo.name.toLowerCase() +
+                                          " to " + leftPanelInfo.endDirection);
     addButton.onclick = function () {
         leftPanelInfo.addEntryFunction(config);
     }
@@ -619,11 +613,8 @@ function createRowInputAndBtn(config) {
  * @returns {undefined}         - Doesn't return anything
  */
 function createDeleteBtn(config, buttonConfig) {
-    let deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.innerHTML = "Delete a " + buttonConfig.nameLowerCase +
-                          " from the " + buttonConfig.endDirection;
-    deleteBtn.classList.add("left-panel-button");
+    let deleteBtn = createLeftPanelButton("Delete a " + buttonConfig.nameLowerCase +
+                                          " from the " + buttonConfig.endDirection);
     deleteBtn.onclick = function () {
         buttonConfig.deleteFunction(config);
     }
@@ -659,7 +650,7 @@ function createJSONButton(clientConfig) {
 
     JSONBtn.onclick = function () {
         // eslint-disable-next-line no-console
-        console.log(dtToJSON(clientConfig));
+        console.log(dtToJSON(clientConfig.wrapperDivId));
     }
     wrapperDiv.appendChild(JSONBtn);
 }
@@ -667,11 +658,17 @@ function createJSONButton(clientConfig) {
 /**
  * Returns the HTML element corresponding to a cell at a specific index
  * @param {object} config           - Table configuration object
- * @param {Number} row              - Row on which the cell is located
- * @param {Number} column           - Column in which the cell is located
+ * @param {Number} row              - Row on which the cell is located, indexed including headers
+ * @param {Number} column           - Column in which the cell is located, indexed including headers
  * @returns {HTMLTableCellElement}  - HTML element of a specific cell
  */
 function getCellElement(config, row, column) {
+    if (row < 1 || row >= config.currNumRows) {
+        throw new Error("Invalid row number");
+    }
+    if (column < 1 || column >= config.currNumColumns) {
+        throw new Error("Invalid column number");
+    }
     return document.getElementById(cellIndexToElementId(config.wrapperDivId, row, column))
 }
 
@@ -707,8 +704,8 @@ function getRowData(config, row) {
 /**
  * Gets an object containing all data from all fields of a specific cell
  * @param {object} config   - Table configuration object
- * @param {Number} row      - Row index for the cell
- * @param {Number} col      - Column index for the cell
+ * @param {Number} row      - Row index for the cell, indexed including headers
+ * @param {Number} col      - Column index for the cell, indexed including headers
  * @returns {object}        - Object containing cell data in the following format: {[fieldName]:[fieldValue],...}
  */
 function getCellData(config, row, col) {
@@ -772,12 +769,69 @@ function dtCreateDataTable(clientConfig) {
 }
 
 /**
+ * Function available to client in order to get the data at a specified cell
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @returns {object}            - Dictionary in the following format: {[fieldName]:[fieldValue],...}
+ */
+function dtGetCellData(wrapperDivId, row, col) {
+    let config = configDict[wrapperDivId];
+    return getCellData(config, row + 1, col + 1);
+}
+
+/**
+ * Function available to client in order to mark an arbitrary cell as having invalid data
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @param {string} message      - the error message to display
+ * @returns {undefined}         - Doesn't return anything
+ */
+// eslint-disable-next-line no-unused-vars
+function dtSetCellErrorMessage(wrapperDivId, row, col, message) {
+    throw new Error("Not implemented yet");
+}
+
+/**
+ * Function available to client in order to clear an arbitrary cell's error message
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @param {int} row             - the row of the cell, 0-indexed (i.e. not including headers)
+ * @param {int} col             - the column of the cell, 0-indexed (i.e. not including headers)
+ * @returns {undefined}         - Doesn't return anything
+ */
+// eslint-disable-next-line no-unused-vars
+function dtClearCellErrorMessage(wrapperDivId, row, col) {
+    throw new Error("Not implemented yet");
+}
+
+/**
+ * Function available to client in order to get the number of rows
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @returns {int}               - Number of rows of data (i.e. not including the header row)
+ */
+function dtGetNumRows(wrapperDivId) {
+    let config = configDict[wrapperDivId];
+    return config.currNumRows - 1;
+}
+
+/**
+ * Function available to client in order to get the number of columns
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
+ * @returns {int}               - Number of columns of data (i.e. not including the header column)
+ */
+function dtGetNumColumns(wrapperDivId) {
+    let config = configDict[wrapperDivId];
+    return config.currNumColumns - 1;
+}
+
+/**
  * Parses data held in HTML to JSON and sends it to client
- * @param {object} clientConfig - the config
+ * @param {object} wrapperDivId - the wrapper div ID originally passed to dtCreateDataTable
  * @returns {object} jsonObject - the JSON string object
  * */
-function dtToJSON(clientConfig) {
-    let config = configDict[clientConfig.wrapperDivId];
+function dtToJSON(wrapperDivId) {
+    let config = configDict[wrapperDivId];
     let rowNames = [];
     for (let row = 0; row < config.numRows; row++) {
         rowNames[row] = getCellElement(config, row, 0).innerHTML;
@@ -843,5 +897,10 @@ function dtToJSON(clientConfig) {
 /* eslint no-undef: ["off"] */
 if (typeof exports !== typeof undefined) {
     exports.createDataTable = dtCreateDataTable;
+    exports.getCellData = dtGetCellData;
+    exports.getNumRows = dtGetNumRows;
+    exports.getNumColumns = dtGetNumColumns;
+    exports.setCellErrorMessage = dtSetCellErrorMessage;
+    exports.clearCellErrorMessage = dtClearCellErrorMessage;
     exports.toJSON = dtToJSON;
 }

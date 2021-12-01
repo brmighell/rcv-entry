@@ -48,6 +48,10 @@ dtCreateDataTable(config);
 
 additional config options are described below.
 
+### Callbacks and data validation
+Each field can optionally trigger a callback when it is edited.
+Callback functions should return `null` or nothing (`undefined`) if there is no error, and return an error message (`string`) if there is an error.
+
 ### Configuration options
 The `config` dictionary has the following options:
 
@@ -64,3 +68,8 @@ The `config` dictionary has the following options:
 | `types` <br/><br/> default: `[Number, Array]` | Array of the types for all fields in a cell. |
 | `values` <br/><br/> default: `[0, ["Active", "Inactive"]]` | Array of the types for all fields in a cell. |
 | `callbacks` <br/><br/> default: `"None"` | Tells what function to execute when a field is changed. |
+
+## CSS configuration
+All CSS styles begin with `dt_` and can be overridden with your own custom CSS.
+See [data-table/table.css](data-table/table.css) for some of the options that may be overridden.
+Additional, unstyled classes are also set on several elements, though these are undocumented.
