@@ -418,6 +418,30 @@ describe('Interaction tests', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 
+    test('Allow multiple error messages per cell, one per field', () => {
+        createSingleCellTable(['Value0', 'Value1'], [Number, Number], [0, 0], [invalidIfNegative, invalidIfNegative])
+
+        let input0 = document.getElementsByClassName('dt_cell-input')[0];
+        let input1 = document.getElementsByClassName('dt_cell-input')[1];
+        input0.value = -23;
+        input0.dispatchEvent(new Event('focusout'));
+        input1.value = -23;
+        input1.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('dt_error-message')).toHaveLength(2);
+    });
+
+    test('Regression test: only one error message per field', () => {
+        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+
+        let input = document.getElementsByClassName('dt_cell-input')[0];
+        input.value = -23;
+        input.dispatchEvent(new Event('focusout'));
+        input.dispatchEvent(new Event('focusout'));
+
+        expect(document.getElementsByClassName('dt_error-message')).toHaveLength(1);
+    });
+
     test('Callback has correctly 0-indexed row/col', () => {
         const mockCallback = jest.fn(() => null);
         createSingleCellTable(['Value'], [Number], [0], [mockCallback])
