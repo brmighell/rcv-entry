@@ -69,7 +69,7 @@ class Config {
             names: clientConfig.names === undefined ? ["Value", "Status"] : clientConfig.names,
             types: clientConfig.types === undefined ? [Number, Array] : clientConfig.types,
             values: clientConfig.values === undefined ? [0, ["Active", "Inactive"]] : clientConfig.values,
-            callbacks: clientConfig.callbacks === undefined ? [invalidIfNegative, null] : clientConfig.callbacks
+            callbacks: clientConfig.callbacks === undefined ? [null, null] : clientConfig.callbacks
         }
 
         /**
@@ -79,22 +79,6 @@ class Config {
         this.currNumRows = 0;
         this.currNumColumns = 0;
     }
-}
-
-/**
- * FIXME: Remove this when done!
- * Test functions for callback functionality
- */
-/**
- * "Callback" function to check if a value is negative
- * @param {Number} value    - Value to be checked
- * @returns {string}        - 'Invalid' if less than zero, 'Okay' otherwise
- */
-function invalidIfNegative(value) {
-    if (value < 0) {
-        return 'Number cannot be negative';
-    }
-    return null;
 }
 
 /**
@@ -352,9 +336,10 @@ function createEntryCell(config, row, rowIndex, colIndex) {
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
         let type = config.datumConfig.types[fieldNum];
+        let fieldName = config.datumConfig.names[fieldNum];
 
         let label = document.createElement("LABEL");
-        label.innerHTML = config.datumConfig.names[fieldNum] + ": ";
+        label.innerHTML = fieldName + ": ";
         label.classList.add('dt_cell-label');
 
         let field = null;
@@ -388,7 +373,11 @@ function createEntryCell(config, row, rowIndex, colIndex) {
         }
 
         if (cellFieldHasCallback(config, fieldNum)) {
-            createCallbackListener(config, cell, field, fieldNum)
+            field.addEventListener("focusout", function () {
+                const fieldValue = getCellData(config, rowIndex, colIndex)[fieldName];
+                const errorMessage = config.datumConfig.callbacks[fieldNum](fieldValue, rowIndex-1, colIndex-1);
+                handleCallbackReturn(config, cell, fieldNum, errorMessage);
+            })
         }
 
         label.appendChild(field);
@@ -404,35 +393,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
  */
 function cellFieldHasCallback(config, fieldNum) {
     return config.datumConfig.callbacks[fieldNum] !== undefined && config.datumConfig.callbacks[fieldNum] !== null;
-}
-
-/**
- * Creates a callback listener, distinguishing between the type of field to which the callback applies
- * @param {object} config                               - Table configuration object
- * @param {HTMLTableDataCellElement} cell               - Cell within the table
- * @param {HTMLInputElement|HTMLSelectElement} field    - The field to which the callback applies
- * @param {Number} fieldNum                             - Index of the field within the cell
- * @returns {undefined}                                 - Doesn't return anything
- */
-function createCallbackListener(config, cell, field, fieldNum) {
-
-    field.addEventListener("focusout", function () {
-        let fieldValue = null;
-
-        // Gets value of the field, depending on what type of field it is
-        if (field.type.toString() === 'text') {
-            fieldValue = [field.value.trim()]
-        } else if (field.type.toString() === 'checkbox') {
-            fieldValue = [field.checked]
-        } else if (field.type.toString() === 'dropdown') {
-            fieldValue = [field.value]
-        } else {
-            throw String('Field has no class');
-        }
-
-        let errorMessage = Reflect.apply(config.datumConfig.callbacks[fieldNum], config.datumConfig.callbacks[1], [fieldValue]);
-        handleCallbackReturn(config, cell, fieldNum, errorMessage);
-    })
 }
 
 /**
@@ -723,16 +683,19 @@ function getCellData(config, row, col) {
     let cell = getCellElement(config, row, col);
 
     /*
-    Assumes that each cell has only field labels as children
+    Assumes that all labels under this child are, in order, the labels we created for the data types
      */
-    cell.childNodes.forEach(function (label, index) {
+    const labels = cell.getElementsByTagName("label");
+    for (let index = 0; index < labels.length; ++index) {
         /*
         Assumes that each label has two children. The first is
         text containing the label's name and the second is the
         space the user can interact with.
          */
+        const label = labels[index];
         let value = null;
-        switch (config.datumConfig.types[index]) {
+        const type = config.datumConfig.types[index];
+        switch (type) {
             case Number:
                 value = parseInt(label.childNodes[1].value, 10);
                 break;
@@ -744,13 +707,11 @@ function getCellData(config, row, col) {
                 value = label.childNodes[1].value;
                 break;
             default:
-                throw String("Label " + label.innerHTML + " does not have a supported field.");
+                throw String("Label " + label.innerHTML + " does not have a supported field: " + type);
         }
-        /**
-         * FIXME: How do we want cell properties to be named? Do we care about lowercase?
-         */
-        cellData[config.datumConfig.names[index].toLowerCase()] = value;
-    })
+
+        cellData[config.datumConfig.names[index]] = value;
+    }
     return cellData;
 }
 

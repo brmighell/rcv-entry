@@ -267,13 +267,6 @@ function createSingleCellTable(names, types, values, callbacks) {
     });
 }
 
-function invalidIfNegative(value) {
-    if (value[0] < 0) {
-        return 'Invalid';
-    }
-    return null;
-}
-
 describe('API basic tests', () => {
     beforeEach(() => {
         table.createDataTable({
@@ -386,6 +379,22 @@ describe('API basic tests', () => {
 });
 
 describe('Interaction tests', () => {
+    /**
+     * "Callback" function to check if a value is negative
+     * @param {Number} value    - Value to be checked
+     * @param {Number} row      - Row index that has changed (0-indexed: doen't include header)
+     * @param {Number} col      - Column index that has changed (0-indexed: doen't include header)
+     * @returns {string}        - 'Invalid' if less than zero, null otherwise
+     */
+    function invalidIfNegative(value, row, col) {
+        expect(row).not.toBeLessThan(0);
+        expect(col).not.toBeLessThan(0);
+        if (value < 0) {
+            return 'Invalid';
+        }
+        return null;
+    }
+
     test('Invalid input to text input field updates cell appropriately', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
         expect(numErrorsVisible()).toEqual(0);
@@ -409,8 +418,29 @@ describe('Interaction tests', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 
+    test('Callback has correctly 0-indexed row/col', () => {
+        const mockCallback = jest.fn(() => null);
+        createSingleCellTable(['Value'], [Number], [0], [mockCallback])
+
+        let input = document.getElementsByClassName('dt_cell-input')[0];
+        input.value = 23;
+        input.dispatchEvent(new Event('focusout'));
+
+        // The mock function is called once
+        expect(mockCallback.mock.calls.length).toBe(1);
+
+        // The first argument (the inputted value)
+        expect(mockCallback.mock.calls[0][0]).toBe(23);
+
+        // The second argument (the row)
+        expect(mockCallback.mock.calls[0][1]).toBe(0);
+
+        // The third argument (the col)
+        expect(mockCallback.mock.calls[0][2]).toBe(0);
+    });
+
     test('Ensure all buttons are non-submitting buttons', () => {
-        createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
+        createSingleCellTable();
 
         const elems = document.getElementsByTagName("button");
         for (const elem of elems) {
@@ -427,7 +457,7 @@ describe('Test cell getters and setters', () => {
     });
 
     test('Can get simple data', () => {
-        expect(table.getCellData('div-id', 0, 0)).toEqual({'value': NaN, 'status': 'Active'});
+        expect(table.getCellData('div-id', 0, 0)).toEqual({'Value': NaN, 'Status': 'Active'});
     });
     test('Row too high throws error', () => {
         expect(() => table.getCellData('div-id', 3, 0)).toThrow();
