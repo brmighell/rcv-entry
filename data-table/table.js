@@ -286,11 +286,17 @@ function addSingleColumn(config) {
 
 /**
  * Deletes a single Column from an existing table (delete from the bottom of the table)
+ * TODO: when only 1 cell remaining, disable the delete button instead of just doing nothing
  *
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
 function deleteSingleColumn(config) {
+    // Must have at least 1 row and col (or 2 when accounting for headers)
+    if (config.currNumColumns == 2) {
+        return;
+    }
+
     let table = document.getElementById(config.tableIds.tableElementId);
     let numRows = config.currNumRows;
     for (let i = 0; i < numRows; i++){
@@ -484,11 +490,17 @@ function deleteRows(config, numberOfRows, rowIndex) {
 
 /**
  * Deletes a single row from an existing table
+ * TODO: when only 1 cell remaining, disable the delete button instead of just doing nothing
  *
  * @param {object} config   - Table configuration object
  * @returns {undefined}     - Doesn't return anything
  */
 function deleteSingleRow(config) {
+    // Must have at least 1 row and col (or 2 when accounting for headers)
+    if (config.currNumRows == 2) {
+        return;
+    }
+
     config.currNumRows -= 1;
     document.getElementById(config.tableIds.tbodyElementId).deleteRow(config.currNumRows - 1);
 }
