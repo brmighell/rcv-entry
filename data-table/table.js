@@ -682,7 +682,8 @@ function getCellElement(config, row, column) {
  */
 function getTableData(config) {
     let tableData = [];
-    for (let row = 0; row < config.numRows; row++) {
+    // config.defaultNumRows
+    for (let row = 0; row < config.currNumRows; row++) {
         tableData.push(getRowData(config, row));
     }
     return tableData;
@@ -696,7 +697,8 @@ function getTableData(config) {
  */
 function getRowData(config, row) {
     let rowData = [];
-    for (let col = 1; col < config.numColumns; col++) {
+    // config.defaultNumColumns
+    for (let col = 1; col < config.currNumColumns; col++) {
         rowData.push(getCellData(config, row, col));
     }
     return rowData
@@ -785,7 +787,7 @@ function dtToJSON(clientConfig) {
     let data = getTableData(config);
     let jsonObject = {
         "version": 1,
-        rowNames,
+        rowNames ,
         columnNames,
         data
     }
