@@ -335,7 +335,9 @@ function createEntryCell(config, row, rowIndex, colIndex) {
     cell.classList.add("dt_cell");
     // add all the stuff from datumConfig
     for (let fieldNum = 0; fieldNum < config.datumConfig.names.length; fieldNum++) {
+
         let type = config.datumConfig.types[fieldNum];
+        // console.log(type);
         let fieldName = config.datumConfig.names[fieldNum];
 
         let label = document.createElement("LABEL");
@@ -373,6 +375,7 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
              */
+            console.log("------------------");
             throw String("Cell field datatype not supported.");
         }
 
@@ -655,11 +658,9 @@ function createRowDeleteBtn(config) {
  */
 function createJSONButton(clientConfig) {
     let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
-
     let JSONBtn = document.createElement("button");
     JSONBtn.type = "button";
     JSONBtn.innerHTML = "Print JSON to console";
-
     JSONBtn.onclick = function () {
         // eslint-disable-next-line no-console
         console.log(dtToJSON(clientConfig.wrapperDivId));
@@ -675,13 +676,9 @@ function createJSONButton(clientConfig) {
  * @returns {HTMLTableCellElement}  - HTML element of a specific cell
  */
 function getCellElement(config, row, column) {
-    console.log(config);
-    console.log(row);
-    console.log(config.currNumRows);
     if (row < 1 || row >= config.currNumRows) {
         throw new Error("Invalid row number");
     }
-    console.log(column);
     if (column < 1 || column >= config.currNumColumns) {
         throw new Error("Invalid column number");
     }
@@ -695,7 +692,7 @@ function getCellElement(config, row, column) {
  */
 function getTableData(config) {
     let tableData = [];
-    // config.defaultNumRows
+    console.log(config.currNumRows);
     for (let row = 0; row < config.currNumRows; row++) {
         tableData.push(getRowData(config, row));
     }
@@ -710,7 +707,6 @@ function getTableData(config) {
  */
 function getRowData(config, row) {
     let rowData = [];
-    // config.defaultNumColumns
     for (let col = 1; col < config.currNumColumns; col++) {
         rowData.push(getCellData(config, row, col));
     }
@@ -889,8 +885,14 @@ function dtGetNumColumns(wrapperDivId) {
 function dtToJSON(wrapperDivId) {
     let config = configDict[wrapperDivId];
     let rowNames = [];
-    for (let row = 0; row < config.currNumRows; row++) {
-        rowNames[row] = getCellElement(config, row, 0).innerHTML;
+
+    for (let row = 1; row < config.currNumRows; row++) {
+        try {
+            rowNames[row] = getCellElement(config, row, 0).innerHTML;
+        } catch (err) {
+            return;
+        }
+        // rowNames[row] = getCellElement(config, row, 0).innerHTML;
     }
     // Currently don't support custom column names
     let columnNames = [];
