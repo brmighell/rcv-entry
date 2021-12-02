@@ -675,13 +675,9 @@ function createJSONButton(clientConfig) {
  * @returns {HTMLTableCellElement}  - HTML element of a specific cell
  */
 function getCellElement(config, row, column) {
-    console.log(config);
-    console.log(row);
-    console.log(config.currNumRows);
     if (row < 1 || row >= config.currNumRows) {
         throw new Error("Invalid row number");
     }
-    console.log(column);
     if (column < 1 || column >= config.currNumColumns) {
         throw new Error("Invalid column number");
     }
@@ -889,8 +885,13 @@ function dtGetNumColumns(wrapperDivId) {
 function dtToJSON(wrapperDivId) {
     let config = configDict[wrapperDivId];
     let rowNames = [];
-    for (let row = 0; row < config.currNumRows; row++) {
-        rowNames[row] = getCellElement(config, row, 0).innerHTML;
+    for (let row = 1; row < config.currNumRows; row++) {
+        try {
+            rowNames[row] = getCellElement(config, row, 0).innerHTML;
+        } catch (err) {
+            return;
+        }
+        // rowNames[row] = getCellElement(config, row, 0).innerHTML;
     }
     // Currently don't support custom column names
     let columnNames = [];
