@@ -378,13 +378,13 @@ describe('API basic tests', () => {
     });
 });
 
-function getNumRows() {
-    return document.getElementsByTagName('table')[0].rows.length;
-}
+// function getNumRows() {
+//     return document.getElementsByTagName('table')[0].rows.length;
+// }
 
-function getNumColumns() {
-    return document.getElementsByTagName('table')[0].rows[0].cells.length;
-}
+// function getNumColumns() {
+//     return document.getElementsByTagName('table')[0].rows[0].cells.length;
+// }
 
 describe('Interaction tests', () => {
     /**
@@ -582,7 +582,6 @@ describe("test json", () => {
             'wrapperDivId': 'div-id'
         });
         const content = document.getElementById("div-id");
-        console.log(content);
         const btns = content.getElementsByTagName("button");
         const btn = btns[btns.length - 1];
         try {

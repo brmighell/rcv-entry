@@ -375,7 +375,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             /**
              * FIXME: This error handling could be improved. Maybe a try-catch block?
              */
-            console.log("------------------");
             throw String("Cell field datatype not supported.");
         }
 
@@ -692,7 +691,6 @@ function getCellElement(config, row, column) {
  */
 function getTableData(config) {
     let tableData = [];
-    console.log(config.currNumRows);
     for (let row = 0; row < config.currNumRows; row++) {
         tableData.push(getRowData(config, row));
     }
@@ -890,7 +888,7 @@ function dtToJSON(wrapperDivId) {
         try {
             rowNames[row] = getCellElement(config, row, 0).innerHTML;
         } catch (err) {
-            return;
+            return null;
         }
         // rowNames[row] = getCellElement(config, row, 0).innerHTML;
     }
@@ -899,7 +897,7 @@ function dtToJSON(wrapperDivId) {
     let data = getTableData(config);
     let jsonObject = {
         "version": 1,
-        rowNames ,
+        rowNames,
         columnNames,
         data
     }
