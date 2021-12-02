@@ -29,6 +29,9 @@ Benefits:
 ### #2: Fruit Example
 {{ ex2 }}
 
+### #3: Fast Food Example
+{{ ex3 }}
+
 ### Usage
 #### API: Vanilla Javascript
 If you're not using node.js, functions begin with dt namespace to avoid conflicts:
