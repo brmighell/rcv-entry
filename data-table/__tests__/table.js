@@ -551,3 +551,35 @@ describe('Test cell getters and setters', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 });
+
+describe("test input types", () => {
+    test("type is boolean", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'types': [Number, Boolean]
+        });
+        table.getCellData('div-id', 1, 1);
+        const content = document.getElementById("div-id_row_1_and_col_1_");
+        const labels = content.getElementsByClassName("dt_cell-label");
+        const label = labels[1];
+        const input = label.getElementsByTagName("input")[0];
+        expect(input.type).toBe("checkbox");
+    });
+
+});
+
+describe("test json", () => {
+    test("button", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id'
+        });
+        const content = document.getElementById("div-id");
+        const btns = content.getElementsByTagName("button");
+        const btn = btns[btns.length - 1];
+        try {
+            btn.click();
+        } catch (err) {
+            expect(err).toBe(Error("Invalid column number"));
+        }
+    });
+});
