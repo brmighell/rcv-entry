@@ -8,7 +8,7 @@ layout: default
 # A lightweight, extendable, dependency-free javascript HTML table plugin
 
 The default configuration:
-{% capture ex0 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
+{% capture ex0 %}{% include_relative docs/github-pages-example-0.html %}{% endcapture %}
 {{ ex0 }}
 
 ## Features & Benefits
@@ -32,9 +32,13 @@ Benefits:
 {% capture ex1 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
 {{ ex1 }}
 
-### #2: Fruit Example
+### #2: Fruit Sale Example
 {% capture ex2 %}{% include_relative docs/github-pages-example-2.html %}{% endcapture %}
 {{ ex2 }}
+
+### #3: Fast Food Example
+{% capture ex3 %}{% include_relative docs/github-pages-example-3.html %}{% endcapture %}
+{{ ex3 }}
 
 ### Usage
 #### API: Vanilla Javascript

@@ -1,15 +1,17 @@
 <div>
-    <div id="wrapper-1">
+    <div id="wrapper-2">
     </div>
 
     <script type="text/javascript">
         dtCreateDataTable({
-            wrapperDivId: 'wrapper-1',
-            numRows: 6,
-            numColumns: 6,
+            wrapperDivId: 'wrapper-2',
+            numRows: 4,
+            numColumns: 3,
             rowsNamePlural: 'fruits',
-            columnsName: 'Round',
-            rowsName: 'Type of fruit'
+            columnsName: 'Day',
+            rowsName: 'Type of fruit',
+            names: ["# Value", "Status"],
+            values: [0, ["In Stock", "Out of Stock"]],
         });
     </script>
 </div>
