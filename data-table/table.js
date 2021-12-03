@@ -678,7 +678,7 @@ function getCellElement(config, row, column) {
     if (row < 1 || row >= config.currNumRows) {
         throw new Error("Invalid row number");
     }
-    if (column < 1 || column >= config.currNumColumns) {
+    if (column < 0 || column >= config.currNumColumns) {
         throw new Error("Invalid column number");
     }
     return document.getElementById(constructElementId(config.wrapperDivId, row, column))
@@ -691,7 +691,7 @@ function getCellElement(config, row, column) {
  */
 function getTableData(config) {
     let tableData = [];
-    for (let row = 0; row < config.numRows; row++) {
+    for (let row = 1; row < config.currNumRows; row++) {
         tableData.push(getRowData(config, row));
     }
     return tableData;
@@ -705,7 +705,7 @@ function getTableData(config) {
  */
 function getRowData(config, row) {
     let rowData = [];
-    for (let col = 1; col < config.numColumns; col++) {
+    for (let col = 1; col < config.currNumColumns; col++) {
         rowData.push(getCellData(config, row, col));
     }
     return rowData
@@ -883,8 +883,11 @@ function dtGetNumColumns(wrapperDivId) {
 function dtToJSON(wrapperDivId) {
     let config = configDict[wrapperDivId];
     let rowNames = [];
-    for (let row = 0; row < config.numRows; row++) {
-        rowNames[row] = getCellElement(config, row, 0).innerHTML;
+    for (let row = 1; row < config.currNumRows; row++) {
+        let cell = getCellElement(config, row, 0);
+        // row - 1 accounts for the fact that rows with editable content start at index 1 while arrays start at 0
+        rowNames[row - 1] = config.canEditRowHeader
+            ? cell.getElementsByTagName("INPUT")[0].value : cell.textContent;
     }
     // Currently don't support custom column names
     let columnNames = [];
