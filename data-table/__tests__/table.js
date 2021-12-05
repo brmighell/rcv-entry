@@ -406,6 +406,7 @@ describe('Interaction tests', () => {
         expect(numErrorsVisible()).toEqual(1);
     });
 
+
     test('Valid input to text input field updates cell appropriately', () => {
         createSingleCellTable(['Value'], [Number], [0], [invalidIfNegative])
 
@@ -470,6 +471,19 @@ describe('Interaction tests', () => {
         for (const elem of elems) {
             expect(elem.type).toEqual("button");
         }
+    });
+
+    test("Test the type is boolean", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'types': [Number, Boolean]
+        });
+        table.getCellData('div-id', 1, 1);
+        const content = document.getElementById("div-id_row_1_and_col_1_");
+        const labels = content.getElementsByClassName("dt_cell-label");
+        const label = labels[1];
+        const input = label.getElementsByTagName("input")[0];
+        expect(input.type).toBe("checkbox");
     });
 });
 

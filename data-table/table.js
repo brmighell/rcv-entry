@@ -371,11 +371,6 @@ function createEntryCell(config, row, rowIndex, colIndex) {
             }
             field = select;
             listener = 'change';
-        } else {
-            /**
-             * FIXME: This error handling could be improved. Maybe a try-catch block?
-             */
-            throw String("Cell field datatype not supported.");
         }
 
         field.id = constructInputFieldId(config.wrapperDivId, rowIndex, colIndex, fieldNum);
