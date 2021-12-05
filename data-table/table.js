@@ -210,6 +210,7 @@ function createColumnHeaderCell(config, colIndex) {
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
+    input.id = constructInputFieldId(config.wrapperDivId, 0, colIndex, 0);
     input.placeholder = config.columnsName;
     input.classList.add('dt_table-entry-field');
     return input;
@@ -224,6 +225,7 @@ function createRowHeaderCell(config, rowIndex) {
     // Creates the field for text input
     let input = document.createElement("INPUT");
     input.type = 'text';
+    input.id = constructInputFieldId(config.wrapperDivId, rowIndex, 0, 0);
     input.placeholder = config.rowsName;
     input.classList.add('dt_table-entry-field');
     return input;
