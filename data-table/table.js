@@ -346,9 +346,16 @@ function createEntryCell(config, row, rowIndex, colIndex) {
 
         let field = null;
         let listener = null; // Each input type wants a different listener'focusout'; // usually we wan't a focusout, but not on dropdown
-        if (type === Number || type === String) {
+        if (type === String) {
             let input = document.createElement("INPUT");
             input.type = 'text';
+            input.placeholder = config.datumConfig.values[fieldNum];
+            input.classList.add('dt_cell-input');
+            field = input;
+            listener = 'focusout';
+        } else if (type === Number) {
+            let input = document.createElement("INPUT");
+            input.type = 'number';
             input.placeholder = config.datumConfig.values[fieldNum];
             input.classList.add('dt_cell-input');
             field = input;

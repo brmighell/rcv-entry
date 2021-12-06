@@ -563,22 +563,24 @@ describe('Serialization', () => {
 
     test('Default serialization', () => {
         expect(table.toJSON('div-id')).toEqual(JSON.stringify({
-            "version":1,
+            "version": 1,
             "rowNames": [""],
             "columnNames": [],
-            "data": [[{"Value":null,"Status":"Active"}]]
+            "data": [[{"Value": null, "Status": "Active"}]]
         }));
     });
 
-    test('Serialization of comma-separated number', () => {
-        cell0 = document.getElementById('div-id_row_1_and_col_1_and_field_0_')
-        cell0.value = '1,000'
-        cell0.dispatchEvent(new Event('focusout'));
-        expect(table.toJSON('div-id')).toEqual(JSON.stringify({
-            "version":1,
-            "rowNames": [""],
-            "columnNames": [],
-            "data": [[{"Value":1000,"Status":"Active"}]]
-        }));
+    test('Ensure number field doesn\'t allow commas', () => {
+        document.getElementById('div-id_row_1_and_col_1_and_field_0_').value = '1,000'
+        const serialized = table.toJSON('div-id');
+        const numValue = JSON.parse(serialized).data[0][0].Value;
+        expect(numValue).toEqual(null);
+    });
+
+    test('Ensure number field correctly serializes', () => {
+        document.getElementById('div-id_row_1_and_col_1_and_field_0_').value = '1000'
+        const serialized = table.toJSON('div-id');
+        const numValue = JSON.parse(serialized).data[0][0].Value;
+        expect(numValue).toEqual(1000);
     });
 });
