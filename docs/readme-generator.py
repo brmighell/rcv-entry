@@ -39,7 +39,7 @@ def create_derived_files(input_filename, output_static_filename, output_dynamic_
     #    3. What file to include in the static file?
     magic_keys = {
         '{{ deps }}\n': ('deps', 'docs/deps.html', None),
-        '{{ ex0 }}\n':  ('ex0', 'docs/github-pages-example-1.html', None),
+        '{{ ex0 }}\n':  ('ex0', 'docs/github-pages-example-0.html', None),
         '{{ ex1 }}\n':  ('ex1', 'docs/github-pages-example-1.html', None),
         '{{ ex2 }}\n':  ('ex2', 'docs/github-pages-example-2.html', None),
     }
