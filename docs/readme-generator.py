@@ -62,7 +62,7 @@ def create_derived_files(input_filename, output_static_filename, output_dynamic_
         if static_content is not None:
             # Replace the static content
             static_lines.append(
-                f'\n[\[interactive demo\]](https://artoonie.github.io/timeline-range-slider)\n')
+                f'\n[\[interactive demo\]](https://brmighell.github.io/rcv-entry)\n')
             static_lines.append(f'![{key}]({static_content})\n')
 
         # Include the actual content + the dynamic content
