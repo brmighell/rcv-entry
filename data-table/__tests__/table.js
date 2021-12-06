@@ -551,3 +551,34 @@ describe('Test cell getters and setters', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 });
+
+describe('Serialization', () => {
+    beforeEach(() => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'numRows': 1,
+            'numColumns': 1
+        });
+    });
+
+    test('Default serialization', () => {
+        expect(table.toJSON('div-id')).toEqual(JSON.stringify({
+            "version":1,
+            "rowNames": [""],
+            "columnNames": [],
+            "data": [[{"Value":null,"Status":"Active"}]]
+        }));
+    });
+
+    test('Serialization of comma-separated number', () => {
+        cell0 = document.getElementById('div-id_row_1_and_col_1_and_field_0_')
+        cell0.value = '1,000'
+        cell0.dispatchEvent(new Event('focusout'));
+        expect(table.toJSON('div-id')).toEqual(JSON.stringify({
+            "version":1,
+            "rowNames": [""],
+            "columnNames": [],
+            "data": [[{"Value":1000,"Status":"Active"}]]
+        }));
+    });
+});
