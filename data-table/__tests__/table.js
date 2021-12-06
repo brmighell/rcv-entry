@@ -551,3 +551,36 @@ describe('Test cell getters and setters', () => {
         expect(numErrorsVisible()).toEqual(0);
     });
 });
+
+describe('Serialization', () => {
+    beforeEach(() => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'numRows': 1,
+            'numColumns': 1
+        });
+    });
+
+    test('Default serialization', () => {
+        expect(table.toJSON('div-id')).toEqual(JSON.stringify({
+            "version": 1,
+            "rowNames": [""],
+            "columnNames": [],
+            "data": [[{"Value": null, "Status": "Active"}]]
+        }));
+    });
+
+    test('Ensure number field doesn\'t allow commas', () => {
+        document.getElementById('div-id_row_1_and_col_1_and_field_0_').value = '1,000'
+        const serialized = table.toJSON('div-id');
+        const numValue = JSON.parse(serialized).data[0][0].Value;
+        expect(numValue).toEqual(null);
+    });
+
+    test('Ensure number field correctly serializes', () => {
+        document.getElementById('div-id_row_1_and_col_1_and_field_0_').value = '1000'
+        const serialized = table.toJSON('div-id');
+        const numValue = JSON.parse(serialized).data[0][0].Value;
+        expect(numValue).toEqual(1000);
+    });
+});
