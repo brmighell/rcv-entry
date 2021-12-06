@@ -8,7 +8,7 @@ layout: default
 # A lightweight, extendable, dependency-free javascript HTML table plugin
 
 The default configuration:
-{% capture ex0 %}{% include_relative docs/github-pages-example-1.html %}{% endcapture %}
+{% capture ex0 %}{% include_relative docs/github-pages-example-0.html %}{% endcapture %}
 {{ ex0 }}
 
 ## Features & Benefits
