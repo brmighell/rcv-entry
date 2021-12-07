@@ -20,6 +20,29 @@ describe('basic tests to ensure createDataTable can function well', () => {
         expect(contents.substr(0, 12)).toEqual("+ Add column");
     });
 
+    test("test default row name", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'rowsName': 'div-row',
+            'columnsName': 'div-col'
+        });
+        const contents = document.getElementsByClassName('dt_cell')[1].textContent;
+        expect(contents.substr(0, 7)).toBe('div-col');
+    });
+
+    test("test tpye is array", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'types': [Number, Array]
+        });
+        table.getCellData('div-id', 1, 1);
+        const content = document.getElementById("div-id_row_1_and_col_1_");
+        const labels = content.getElementsByClassName("dt_cell-label");
+        const label = labels[1];
+        const input = label.getElementsByTagName("select")[0];
+        expect(input.type).toBe("select-one");
+    });
+
     test('check the default value of rows', () => {
         const numRows = document.getElementsByTagName('table')[0].rows.length;
         expect(numRows).toEqual(4);
@@ -372,9 +395,9 @@ describe('API basic tests', () => {
             table.createDataTable({
                 'wrapperDivId': 'a',
                 'names': ["Placeholder"],
-                'types': [String]
+                'types': [BigInt]
             });
-        }).toThrow("Each entry field must be one of the following types: Boolean, Number, or Array");
+        }).toThrow("Each entry field must be one of the following types: Boolean, Number, Array or String");
     });
 });
 
@@ -484,6 +507,19 @@ describe('Interaction tests', () => {
         const label = labels[1];
         const input = label.getElementsByTagName("input")[0];
         expect(input.type).toBe("checkbox");
+    });
+
+    test("Test the type is String", () => {
+        table.createDataTable({
+            'wrapperDivId': 'div-id',
+            'types': [Number, String]
+        });
+        table.getCellData('div-id', 1, 1);
+        const content = document.getElementById("div-id_row_1_and_col_1_");
+        const labels = content.getElementsByClassName("dt_cell-label");
+        const label = labels[1];
+        const input = label.getElementsByTagName("input")[0];
+        expect(input.type).toBe("text");
     });
 });
 
@@ -598,3 +634,15 @@ describe('Serialization', () => {
         expect(numValue).toEqual(1000);
     });
 });
+
+// describe("test json", () => {
+//     test("print json button", () => {
+//         table.createDataTable({
+//             'wrapperDivId': 'div-id'
+//         });
+//         const content = document.getElementById("div-id");
+//         const btns = content.getElementsByTagName("button");
+//         const btn = btns[btns.length - 1];
+//         btn.click();
+//     });
+// });
