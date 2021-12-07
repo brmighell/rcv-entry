@@ -125,11 +125,11 @@ function validateConfig(config) {
     /**
      * FIXME: allowedTypes should be relocated somewhere else if we wind up keeping it
      */
-    let allowedTypes = [Boolean, Number, Array];
+    let allowedTypes = [Boolean, Number, Array, String];
 
     for (const element of config.datumConfig.types) {
         if (!allowedTypes.includes(element)) {
-            throw new Error("Each entry field must be one of the following types: Boolean, Number, or Array");
+            throw new Error("Each entry field must be one of the following types: Boolean, Number, Array or String");
         }
     }
 }
@@ -264,7 +264,6 @@ function addSingleColumn(config) {
 
     for(let rowIndex = 1; rowIndex < numRows; rowIndex++){
         createEntryCell(config, table.rows[rowIndex], rowIndex, numCols);
-
     }
 
     config.currNumColumns += 1;
@@ -749,6 +748,8 @@ function getCellData(config, row, col) {
                 value = node.checked;
                 break;
             case String:
+                value = node.value;
+                break;
             case Array:
                 value = node.value;
                 break;
