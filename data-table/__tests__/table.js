@@ -20,20 +20,20 @@ describe('basic tests to ensure createDataTable can function well', () => {
         expect(contents.substr(0, 12)).toEqual("+ Add column");
     });
 
-    test("test default row name", () => {
+    test("test Non-default Row name", () => {
         table.createDataTable({
             'wrapperDivId': 'div-id',
-            'rowsName': 'div-row',
-            'columnsName': 'div-col'
+            'rowsName': 'Fruit',
+            'columnsName': 'Round'
         });
-        const contents = document.getElementsByClassName('dt_cell')[1].textContent;
-        expect(contents.substr(0, 7)).toBe('div-col');
+        const contents = document.getElementsByClassName('dt_cell')[0].textContent;
+        expect(contents).toBe('Fruits');
     });
 
-    test("test tpye is array", () => {
+    test("test the type can be array", () => {
         table.createDataTable({
             'wrapperDivId': 'div-id',
-            'types': [Number, Array]
+            'types': [Array, Number]
         });
         table.getCellData('div-id', 1, 1);
         const content = document.getElementById("div-id_row_1_and_col_1_");
@@ -496,7 +496,7 @@ describe('Interaction tests', () => {
         }
     });
 
-    test("Test the type is boolean", () => {
+    test("Test the type can be boolean", () => {
         table.createDataTable({
             'wrapperDivId': 'div-id',
             'types': [Number, Boolean]
@@ -509,7 +509,7 @@ describe('Interaction tests', () => {
         expect(input.type).toBe("checkbox");
     });
 
-    test("Test the type is String", () => {
+    test("Test the type can be String", () => {
         table.createDataTable({
             'wrapperDivId': 'div-id',
             'types': [Number, String]
