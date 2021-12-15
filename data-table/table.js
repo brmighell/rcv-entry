@@ -651,26 +651,6 @@ function createRowDeleteBtn(config) {
 }
 
 /**
- * This button causes a JSON object containing the table's
- * contents to be printed to the console
- * @param {object} clientConfig - Client configuration requests
- * @returns {undefined}         - Doesn't return anything
- */
-function createJSONButton(clientConfig) {
-    let wrapperDiv = document.getElementById(clientConfig.wrapperDivId);
-
-    let JSONBtn = document.createElement("button");
-    JSONBtn.type = "button";
-    JSONBtn.innerHTML = "Print JSON to console";
-
-    JSONBtn.onclick = function () {
-        // eslint-disable-next-line no-console
-        console.log(dtToJSON(clientConfig.wrapperDivId));
-    }
-    wrapperDiv.appendChild(JSONBtn);
-}
-
-/**
  * Returns the HTML element corresponding to a cell at a specific index
  * @param {object} config           - Table configuration object
  * @param {Number} row              - Row on which the cell is located, indexed including headers
@@ -782,11 +762,6 @@ function dtCreateDataTable(clientConfig) {
     createSubDivs(configDict[clientConfig.wrapperDivId]);
 
     createTable(configDict[clientConfig.wrapperDivId]);
-
-    /**
-     * FIXME: Remove this function call and declaration when done testing
-     */
-    createJSONButton(clientConfig);
 
     createEntryBox(configDict[clientConfig.wrapperDivId]);
 }
